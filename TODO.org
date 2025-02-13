@@ -1,0 +1,26 @@
+* To Configure
+** TODO LSP w/ eglot [75%]
+*** DONE Basic configuration
+CLOSED: [2025-02-23 Sun 12:22]
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2025-02-23 Sun 12:22]
+:END:
+
+*** DONE Keybindings
+CLOSED: [2025-02-27 Thu 17:43]
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2025-02-27 Thu 17:43]
+:END:
+
+*** TODO LSP management
+
+*** DONE LSP handles indent region
+CLOSED: [2025-03-11 Tue 10:51]
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2025-03-11 Tue 10:51]
+:END:
+
+** TODO Check for other conveniences from prelude setup
+*** TODO Make shell script executable on save
+** TODO wgrep
+** TODO consult-ripgrep-at-point
