@@ -7,5 +7,3 @@
 
 ;; Hide the title bar
 (add-to-list 'default-frame-alist '(undecorated . t))
-
-(provide 'pre-early-init)

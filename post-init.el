@@ -1,8 +1,8 @@
 ;;; post-init.el --- Configuration after interface loads -*- no-byte-compile: t; lexical-binding: t; -*-
 
 (use-package compile-angel
-  :ensure t
   :demand t
+  :ensure t
   :custom
   (compile-angel-verbose t)
 
@@ -14,7 +14,7 @@
   (push "/pre-early-init.el" compile-angel-excluded-files)
   (push "/post-early-init.el" compile-angel-excluded-files)
 
-  (compile-angel-on-load-mode))
+  (compile-angel-on-load-mode 1))
 
 (use-package exec-path-from-shell
   :ensure t
@@ -225,14 +225,23 @@
   :ensure t
   :bind ("C-=" . er/expand-region))
 
-(use-package yasnippet
-  :ensure t
-  :config
-  (yas-global-mode 1))
-
 (use-package yasnippet-snippets
   :after yasnippet
   :ensure t)
+
+(use-package yasnippet
+  :ensure t
+  :commands (yas-minor-mode
+             yas-global-mode)
+  :hook
+  (after-init . yas-global-mode)
+  :custom
+  (yas-also-auto-indent-first-line t)  ; Indent first line of snippet
+  (yas-also-indent-empty-lines t)
+  (yas-snippet-revival nil)  ; Setting this to t causes issues with undo
+  (yas-wrap-around-region nil) ; Do not wrap region when expanding snippets
+  :init
+  (setq yas-verbosity 0))
 
 (use-package ispell
   :ensure nil
@@ -317,14 +326,60 @@
 (add-hook 'dired-mode-hook #'dired-hide-details-mode)
 
 ;; **** History ****
-(add-hook 'after-init-hook #'global-auto-revert-mode)
-(add-hook 'after-init-hook #'(lambda()
-                               (let ((inhibit-message t))
-                                 (recentf-mode 1))))
-(with-eval-after-load "recentf"
-  (add-hook 'kill-emacs-hook #'recentf-cleanup))
-(add-hook 'after-init-hook #'savehist-mode)
-(add-hook 'after-init-hook #'save-place-mode)
+(use-package autorevert
+  :ensure nil
+  :commands (auto-revert-mode global-auto-revert-mode)
+  :hook
+  (after-init . global-auto-revert-mode)
+  :custom
+  (auto-revert-interval 3)
+  (auto-revert-remote-files nil)
+  (auto-revert-use-notify t)
+  (auto-revert-avoid-polling nil)
+  (auto-revert-verbose t))
+
+(use-package recentf
+  :ensure nil
+  :commands (recentf-mode recentf-cleanup)
+  :hook
+  (after-init . recentf-mode)
+  :custom
+  (recentf-auto-cleanup (if (daemonp) 300 'never))
+  (recentf-exclude
+   (list "\\.tar$" "\\.tbz2$" "\\.tbz$" "\\.tgz$" "\\.bz2$"
+         "\\.bz$" "\\.gz$" "\\.gzip$" "\\.xz$" "\\.zip$"
+         "\\.7z$" "\\.rar$"
+         "COMMIT_EDITMSG\\'"
+         "\\.\\(?:gz\\|gif\\|svg\\|png\\|jpe?g\\|bmp\\|xpm\\)$"
+         "-autoloads\\.el$" "autoload\\.el$"))
+
+  :config
+  ;; A cleanup depth of -90 ensures that `recentf-cleanup' runs before
+  ;; `recentf-save-list', allowing stale entries to be removed before the list
+  ;; is saved by `recentf-save-list', which is automatically added to
+  ;; `kill-emacs-hook' by `recentf-mode'.
+  (add-hook 'kill-emacs-hook #'recentf-cleanup -90))
+
+(use-package savehist
+  :ensure nil
+  :commands (savehist-mode savehist-save)
+  :hook
+  (after-init . savehist-mode)
+  :custom
+  (savehist-autosave-interval 600)
+  (savehist-additional-variables
+   '(kill-ring                        ; clipboard
+     register-alist                   ; macros
+     mark-ring global-mark-ring       ; marks
+     search-ring regexp-search-ring)))
+
+(use-package saveplace
+  :ensure nil
+  :commands (save-place-mode save-place-local-mode)
+  :hook
+  (after-init . save-place-mode)
+  :custom
+  (save-place-limit 400))
 
 ;; **** Window Management ****
 (require 'windmove)
@@ -659,9 +714,6 @@
   :mode (("\\.markdown\\'" . markdown-mode)
          ("\\.md\\'" . markdown-mode)
          ("README\\.md\\'" . gfm-mode))
-  :init
-  (setq markdown-command "multimarkdown")
-
   :bind
   (:map markdown-mode-map
         ("C-c C-e" . markdown-do)))
@@ -1018,6 +1070,7 @@ With prefix ARG, create a new vterm buffer even if one already exists."
   :hook (zig-mode . lsp-deferred))
 
 (use-package emacs
+  :ensure nil
   :demand t
   :bind
   ("s-u" . revert-buffer)
@@ -1036,6 +1089,9 @@ With prefix ARG, create a new vterm buffer even if one already exists."
     (setopt lsp-enable-file-watchers nil))
   (server-start))
 
-(provide 'post-init)
+(use-package server
+  :ensure nil
+  :commands server-start
+  :hook (after-init . server-start))
 
 ;;; post-init.el ends here

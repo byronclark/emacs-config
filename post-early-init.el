@@ -12,5 +12,3 @@
 
 (when (file-exists-p byronc/emacs-local-early-dir)
   (mapc 'load (directory-files byronc/emacs-local-early-dir 't "^[^#\.].*\\.el$")))
-
-(provide 'post-early-init)
