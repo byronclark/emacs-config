@@ -243,30 +243,12 @@
   :init
   (setq yas-verbosity 0))
 
-(use-package ispell
-  :ensure nil
-  :commands (ispell ispell-minor-mode)
-  :custom
-  (ispell-program-name "aspell")
-  (ispell-local-dictionary-alist
-   '(("en_US" "[[:alpha:]]" "[^[:alpha:]]" "[']" nil ("-d" "en_US") nil utf-8)))
-  (ispell-extra-args '("--lang=en_US")))
-
-(use-package flyspell
-  :ensure nil
-  :commands flyspell-mode
+(use-package jinx
+  :ensure t
   :hook
-  ((prog-mode . flyspell-prog-mode)
-   (text-mode . (lambda()
-                  (if (or (derived-mode-p 'yaml-mode)
-                          (derived-mode-p 'yaml-ts-mode)
-                          (derived-mode-p 'ansible-mode))
-                      (flyspell-prog-mode)
-                    (flyspell-mode 1)))))
-  :config
-  ;; Remove doc from Flyspell
-  (setq flyspell-prog-text-faces (delq 'font-lock-doc-face
-                                       flyspell-prog-text-faces)))
+  (emacs-startup . global-jinx-mode)
+  :bind (("M-$" . jinx-correct)
+         ("C-M-$" . jinx-languages)))
 
 (global-set-key (kbd "C-c *") 'isearch-forward-thing-at-point)
 
