@@ -734,6 +734,10 @@
 (use-package envrc
   :hook (after-init . envrc-global-mode))
 
+(use-package mise
+  :ensure t
+  :hook (after-init . global-mise-mode))
+
 ;; **** Terminal ****
 (use-package vterm
   :ensure t
