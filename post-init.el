@@ -736,7 +736,7 @@
 
 (use-package mise
   :ensure t
-  :hook (after-init . global-mise-mode))
+  :hook (prog-mode . mise-mode))
 
 ;; **** Terminal ****
 (use-package vterm
