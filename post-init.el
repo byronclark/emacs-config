@@ -102,7 +102,7 @@
   :ensure t
   :if (display-graphic-p)
   :custom
-  (spacious-padding-subtle-frame-lines t)
+  ;; (spacious-padding-subtle-frame-lines t)
   (spacious-padding-widths '(:internal-border-width 15
                              :header-line-width 4
                              :mode-line-width 6
