@@ -1060,6 +1060,8 @@ With prefix ARG, create a new vterm buffer even if one already exists."
   :demand t
   :bind
   ("s-u" . revert-buffer)
+  :hook
+  (compilation-filter . ansi-color-compilation-filter)
   :config
   (when (eq system-type 'darwin)
     (setq mac-option-modifier 'meta)
