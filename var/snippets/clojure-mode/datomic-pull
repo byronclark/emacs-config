@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: Datomic Pull
+# group: Datomic
+# key: pull
+# --
+(d/pull ${2:(d/db conn)} ${3:'[*]} $1)
+$0
