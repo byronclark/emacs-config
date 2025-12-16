@@ -762,7 +762,10 @@ With prefix ARG, create a new vterm buffer even if one already exists."
              project-vterm)
   :bind (("C-c t" . project-vterm)
          :map project-prefix-map
-         ("t" . project-vterm)))
+         ("t" . project-vterm))
+  :hook
+  (vterm-mode . (lambda () (setq-local global-hl-line-mode nil)))
+  (vterm-copy-mode . (lambda () (call-interactively 'hl-line-mode))))
 
 ;; **** Machine intelligence ****
 (use-package gptel
