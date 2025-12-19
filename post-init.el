@@ -821,7 +821,6 @@ With prefix ARG, create a new vterm buffer even if one already exists."
   (claude-code-newline-keybinding-style 'shift-return-to-send)
   (claude-code-toggle-auto-select t)
   :config
-  (custom-set-faces '(claude-code-repl-face ((t (:family "JuliaMono"))))) ;Needs to be a font with all the Unicode symbols used by Claude Code for UI so that the terminal doesn't have to use a fallback font with different heights.
   (add-hook 'claude-code-process-environment-functions #'monet-start-server-function)
   (monet-mode 1)
   (claude-code-mode)
