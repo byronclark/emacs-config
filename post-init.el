@@ -784,6 +784,7 @@ With prefix ARG, create a new vterm buffer even if one already exists."
                        :stream t
                        :key (auth-source-pick-first-password :host "openrouter.ai")
                        :models '(anthropic/claude-sonnet-4.5
+                                 google/gemini-3-flash-preview
                                  google/gemini-3-pro-preview
                                  openai/gpt-5.1))))
 
