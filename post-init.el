@@ -1056,7 +1056,11 @@ With prefix ARG, create a new vterm buffer even if one already exists."
 ;; **** Zig ****
 (use-package zig-mode
   :ensure t
-  :hook (zig-mode . lsp-deferred))
+  :hook
+  (zig-mode . (lambda ()
+                (smartparens-mode -1)
+                (electric-pair-local-mode)
+                (lsp-deferred))))
 
 (use-package emacs
   :ensure nil
