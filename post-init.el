@@ -938,12 +938,7 @@ With prefix ARG, create a new vterm buffer even if one already exists."
 
 (use-package lsp-ui
   :ensure t
-  :after lsp-mode
-  :custom
-  (lsp-ui-sideline-enable t)
-  (lsp-ui-doc-enable t)
-  (lsp-ui-peek-enable t)
-  (lsp-ui-peek-always-show t))
+  :after lsp-mode)
 
 (use-package lsp-treemacs
   :ensure t
