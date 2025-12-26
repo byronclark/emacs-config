@@ -829,9 +829,14 @@ With prefix ARG, create a new vterm buffer even if one already exists."
 (use-package agent-shell
   :ensure t
   :custom
+  (agent-shell-prefer-viewport-interaction t)
   (agent-shell-agent-configs (list (agent-shell-anthropic-make-claude-code-config)
+                                   (agent-shell-google-make-gemini-config)
                                    (agent-shell-openai-make-codex-config)))
+  ;; Claude Code
   (agent-shell-anthropic-authentication (agent-shell-anthropic-make-authentication :login t))
+  (agent-shell-anthropic-default-model-id "opus")
+  (agent-shell-anthropic-default-session-mode-id "plan")
   :config
   (setq agent-shell-anthropic-claude-environment (agent-shell-make-environment-variables :inherit-env t))
   :commands (agent-shell))
