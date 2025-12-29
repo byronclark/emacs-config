@@ -67,20 +67,20 @@
 
 (use-package ef-themes
   :ensure t
-  :custom
-  (modus-themes-to-toggle '(ef-reverie ef-owl))
-  :config
-  (modus-themes-select 'ef-owl)
+  ;; :custom
+  ;; (modus-themes-to-toggle '(ef-reverie ef-owl))
+  ;; :config
+  ;; (modus-themes-select 'ef-owl)
   )
 
-;; (use-package modus-catppuccin
-;;   :ensure t
-;;   :vc (:url "https://gitlab.com/magus/modus-catppuccin.git" :rev :newest)
-;;   :custom
-;;   (modus-themes-to-toggle '(catppuccin-latte catppuccin-macchiato))
-;;   :config
-;;   (modus-themes-select 'catppuccin-macchiato)
-;;   )
+(use-package modus-catppuccin
+  :ensure t
+  :vc (:url "https://gitlab.com/byronclark/modus-catppuccin.git" :rev :newest)
+  :custom
+  (modus-themes-to-toggle '(catppuccin-latte catppuccin-macchiato))
+  :config
+  (modus-themes-select 'catppuccin-macchiato)
+  )
 
 (defun byronc/load-theme (theme)
   "Disable all currently enabled themes and load THEME."
