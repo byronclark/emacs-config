@@ -799,33 +799,6 @@ With prefix ARG, create a new vterm buffer even if one already exists."
   (aidermacs-editor-model "openrouter/anthropic/claude-sonnet-4.5")
   (aidermacs-weak-model "openrouter/anthropic/claude-haiku-4.5"))
 
-(use-package monet
-  :ensure t
-  :vc (:url "https://github.com/stevemolitor/monet" :rev :newest)
-  :custom
-  (monet-diff-tool 'monet-ediff-tool)
-  (monet-diff-cleanup-tool 'monet-ediff-cleanup-tool))
-
-(use-package eat
-  :ensure t)
-
-(use-package claude-code
-  :ensure t
-  :vc (:url "https://github.com/stevemolitor/claude-code.el" :rev :newest)
-  :init
-  (defun byronc/claude-display-right (buffer)
-    (display-buffer-in-direction buffer '((direction . rightmost))))
-  :custom
-  (claude-code-terminal-backend 'vterm)
-  (claude-code-display-window-fn #'byronc/claude-display-right)
-  (claude-code-newline-keybinding-style 'shift-return-to-send)
-  (claude-code-toggle-auto-select t)
-  :config
-  (add-hook 'claude-code-process-environment-functions #'monet-start-server-function)
-  (monet-mode 1)
-  (claude-code-mode)
-  :bind-keymap ("C-c C" . claude-code-command-map))
-
 (use-package agent-shell
   :ensure t
   :custom
