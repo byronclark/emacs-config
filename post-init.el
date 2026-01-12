@@ -77,9 +77,9 @@
   :ensure t
   :vc (:url "https://gitlab.com/byronclark/modus-catppuccin.git" :rev :newest)
   :custom
-  (modus-themes-to-toggle '(catppuccin-latte catppuccin-macchiato))
+  (modus-themes-to-toggle '(catppuccin-latte catppuccin-frappe))
   :config
-  (modus-themes-select 'catppuccin-macchiato)
+  (modus-themes-select 'catppuccin-frappe)
   )
 
 (defun byronc/load-theme (theme)
