@@ -706,15 +706,9 @@
   :config
   (setq eldoc-echo-area-use-multiline-p nil))
 
-(use-package flycheck
-  :ensure t
-  :init (global-flycheck-mode))
-
-(use-package consult-flycheck
-  :ensure t
-  :after (consult flycheck)
-  :bind
-  (([remap consult-flymake] . consult-flycheck)))
+(use-package flymake
+  :ensure nil
+  :hook (prog-mode . flymake-mode))
 
 (use-package project
   :ensure nil
@@ -896,38 +890,39 @@ With prefix ARG, create a new vterm buffer even if one already exists."
         (set-display-table-slot display-table 'selective-display value)
         (setq buffer-display-table display-table))))))
 
-(use-package lsp-mode
-  :ensure t
+(use-package eglot
+  :ensure nil
+  :commands (eglot-ensure
+             eglot-rename
+             eglot-format-buffer)
+  :bind (:map eglot-mode-map
+         ("C-c e a" . eglot-code-actions)
+         ("C-c e r" . eglot-rename)
+         ("C-c e f" . eglot-format)
+         ("C-c e i" . eglot-find-implementation)
+         ("C-c e d" . eglot-find-declaration))
   :custom
-  (lsp-completion-provider :none)       ;use corfu instead
-  (lsp-lens-enable nil)
-  (lsp-headerline-breadcrumb-enable nil)
-  :init
-  (defun byronc/orderless-dispatch-flex-first (_pattern index _total)
-    (and (eq index 0) 'orderless-flex))
-  (defun byronc/lsp-mode-setup-completion ()
-    (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
-          '(orderless))
-    (add-hook 'orderless-style-dispatchers #'byronc/orderless-dispatch-flex-first nil 'local)
-    (setq-local completion-at-point-functions (list (cape-capf-buster #'lsp-completion-at-point))))
-  :bind (("s-?" . lsp-describe-thing-at-point))
-  :commands (lsp lsp-deferred)
-  :hook (lsp-completion-mode . byronc/lsp-mode-setup-completion))
+  (eglot-connect-timeout 300)           ;clojure-lsp can be *really* slow to start on initial run
+  (eglot-ignored-server-capabilites '(:inlayHintProvider))
+  (eglot-extend-to-xref nil)
+  (eglot-confirm-server-initiated-edits nil)
+  :config
+  (defun byronc/eglot-maybe-format-region (orig-fun beg end &optional arg)
+    (if (and (bound-and-true-p eglot--managed-mode)
+             (eglot--server-capable :documentRangeFormattingProvider))
+        (eglot-format beg end)
+      (funcall orig-fun beg end arg)))
+  (advice-add 'indent-region :around #'byronc/eglot-maybe-format-region)
+  (add-to-list 'eglot-server-programs
+               `((python-mode python-ts-mode) .
+                 ,(eglot-alternatives '(("rass" "python")))
+                 (js-mode js-ts-mode typescript-mode typescript-ts-mode tsx-ts-mode) .
+                 ,(eglot-alternatives '(("rass" "ts"))))))
 
-(use-package lsp-ui
-  :ensure t
-  :after lsp-mode
-  :custom
-  (lsp-ui-doc-enable nil))
-
-(use-package lsp-treemacs
-  :ensure t
-  :after lsp-mode)
-
-;; Allow lsp-mode to navigate into jar archives pointed to by clojure-lsp
+;; Allow eglot to navigate into jar archives pointed to by clojure-lsp
 (use-package jarchive
   :ensure t
-  :after lsp-mode
+  :after eglot
   :config
   (jarchive-setup))
 
@@ -944,12 +939,23 @@ With prefix ARG, create a new vterm buffer even if one already exists."
   :pin melpa-stable
   :after smartparens
   :mode "\\.fiddle\\'" ;Calva fiddle
+  :init
+  (unless (executable-find "clojure-lsp")
+    (let ((command (format "%s --dir %s"
+            (expand-file-name "scripts/install-clojure-lsp.sh"
+                              minimal-emacs-user-directory)
+            (expand-file-name "~/.local/bin"))))
+      (message "Installing clojure-lsp using %s" command)
+      (shell-command command)
+
+      (unless (executable-find "clojure-lsp")
+        (warn "Failed to install clojure-lsp automatically"))))
   :config
   (setq clojure-toplevel-inside-comment-form t)
   :hook ((clojure-mode . (lambda ()
                            (smartparens-strict-mode)
                            (subword-mode 1)))
-         (clojure-mode . lsp-deferred)))
+         (clojure-mode . eglot-ensure)))
 
 (use-package cider
   :ensure t
@@ -1000,16 +1006,12 @@ With prefix ARG, create a new vterm buffer even if one already exists."
   :mode "\\.[mc]js\\'" ;Modules
   :hook ((js-mode . (lambda ()
                       (subword-mode 1)))
-         (js-mode . lsp-deferred)))
+         (js-mode . eglot-ensure)))
 
 ;; **** Python ****
-(use-package lsp-pyright
-  :ensure t
-  :custom
-  (lsp-pyright-langserver-command "basedpyright")
-  :hook (python-mode . (lambda ()
-                         (require 'lsp-pyright)
-                         (lsp-deferred))))
+(use-package python
+  :ensure nil
+  :hook (python-mode . eglot-ensure))
 
 (use-package pyvenv-auto
   :ensure t
@@ -1022,7 +1024,7 @@ With prefix ARG, create a new vterm buffer even if one already exists."
 ;; **** Terraform ****
 (use-package terraform-mode
   :ensure t
-  :hook (terraform-mode . lsp-deferred))
+  :hook (terraform-mode . eglot-ensure))
 
 ;; **** YAML ****
 (use-package yaml-mode
@@ -1035,7 +1037,7 @@ With prefix ARG, create a new vterm buffer even if one already exists."
   (zig-mode . (lambda ()
                 (smartparens-mode -1)
                 (electric-pair-local-mode)
-                (lsp-deferred))))
+                (eglot-ensure))))
 
 (use-package emacs
   :ensure nil
