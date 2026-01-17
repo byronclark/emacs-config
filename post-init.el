@@ -67,19 +67,19 @@
 
 (use-package ef-themes
   :ensure t
-  ;; :custom
-  ;; (modus-themes-to-toggle '(ef-reverie ef-owl))
-  ;; :config
-  ;; (modus-themes-select 'ef-owl)
+  :custom
+  (modus-themes-to-toggle '(ef-frost ef-owl))
+  :config
+  (modus-themes-select 'ef-owl)
   )
 
 (use-package modus-catppuccin
   :ensure t
   :vc (:url "https://gitlab.com/byronclark/modus-catppuccin.git" :rev :newest)
-  :custom
-  (modus-themes-to-toggle '(catppuccin-latte catppuccin-frappe))
-  :config
-  (modus-themes-select 'catppuccin-frappe)
+  ;; :custom
+  ;; (modus-themes-to-toggle '(catppuccin-latte catppuccin-frappe))
+  ;; :config
+  ;; (modus-themes-select 'catppuccin-frappe)
   )
 
 (defun byronc/load-theme (theme)
