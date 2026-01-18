@@ -902,7 +902,7 @@ With prefix ARG, create a new vterm buffer even if one already exists."
          ("C-c e i" . eglot-find-implementation)
          ("C-c e d" . eglot-find-declaration))
   :custom
-  (eglot-connect-timeout 300)           ;clojure-lsp can be *really* slow to start on initial run
+  (eglot-connect-timeout 300)
   (eglot-ignored-server-capabilites '(:inlayHintProvider))
   (eglot-extend-to-xref nil)
   (eglot-confirm-server-initiated-edits nil)
@@ -914,10 +914,11 @@ With prefix ARG, create a new vterm buffer even if one already exists."
       (funcall orig-fun beg end arg)))
   (advice-add 'indent-region :around #'byronc/eglot-maybe-format-region)
   (add-to-list 'eglot-server-programs
-               `((python-mode python-ts-mode) .
-                 ,(eglot-alternatives '(("rass" "python")))
-                 (js-mode js-ts-mode typescript-mode typescript-ts-mode tsx-ts-mode) .
-                 ,(eglot-alternatives '(("rass" "ts"))))))
+               '((python-mode python-ts-mode) .
+                 ("rass" "python")))
+  (add-to-list 'eglot-server-programs
+               '((js-mode js-ts-mode typescript-mode typescript-ts-mode tsx-ts-mode) .
+                 ("rass" "ts"))))
 
 ;; Allow eglot to navigate into jar archives pointed to by clojure-lsp
 (use-package jarchive
