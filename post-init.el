@@ -797,6 +797,7 @@ With prefix ARG, create a new vterm buffer even if one already exists."
   :ensure t
   :custom
   (agent-shell-prefer-viewport-interaction t)
+  (agent-shell-context-sources '(files region error))
   (agent-shell-agent-configs (list (agent-shell-anthropic-make-claude-code-config)
                                    (agent-shell-google-make-gemini-config)
                                    (agent-shell-openai-make-codex-config)))
