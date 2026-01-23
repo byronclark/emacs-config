@@ -82,19 +82,13 @@
   ;; (modus-themes-select 'catppuccin-frappe)
   )
 
-(defun byronc/load-theme (theme)
-  "Disable all currently enabled themes and load THEME."
-  (interactive "STheme: ")
-  (disable-theme (car custom-enabled-themes))
-  (load-theme theme :no-confirm))
-
 (use-package doom-themes
   :ensure t
   :custom
   (doom-themes-enable-bold nil)
   (doom-themes-enable-italic t)
   :config
-  ;; (byronc/load-theme 'doom-one)
+  ;; (load-theme 'doom-one :no-confirm)
   ;; (doom-themes-org-config)
   )
 
