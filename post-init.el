@@ -919,7 +919,15 @@ With prefix ARG, create a new vterm buffer even if one already exists."
                  ("rass" "python")))
   (add-to-list 'eglot-server-programs
                '((js-mode js-ts-mode typescript-mode typescript-ts-mode tsx-ts-mode) .
-                 ("rass" "ts"))))
+                 ("rass" "--" "typescript-language-server" "--stdio" "--" "vscode-eslint-language-server" "--stdio"))))
+
+(use-package treesit-auto
+  :custom
+  (treesit-auto-install 'prompt)
+  (treesit-auto-langs '(typescript tsx python javascript))
+  :config
+  (treesit-auto-add-to-auto-mode-alist '(typescript tsx javascript))
+  (global-treesit-auto-mode))
 
 ;; Allow eglot to navigate into jar archives pointed to by clojure-lsp
 (use-package jarchive
@@ -1003,12 +1011,19 @@ With prefix ARG, create a new vterm buffer even if one already exists."
   (graphviz-dot-indent-width 4))
 
 ;; **** JavaScript ****
-(use-package js-mode
+(use-package js-ts-mode
   :ensure nil
   :mode "\\.[mc]js\\'" ;Modules
-  :hook ((js-mode . (lambda ()
-                      (subword-mode 1)))
-         (js-mode . eglot-ensure)))
+  :hook ((js-ts-mode . subword-mode)
+         (js-ts-mode . eglot-ensure)))
+
+;; **** TypeScript ****
+(use-package typescript-ts-mode
+  :ensure nil
+  :hook ((typescript-ts-mode . eglot-ensure)
+         (typescript-ts-mode . subword-mode)
+         (tsx-ts-mode . eglot-ensure)
+         (tsx-ts-mode . subword-mode)))
 
 ;; **** Python ****
 (use-package python
