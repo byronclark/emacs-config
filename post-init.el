@@ -723,7 +723,19 @@
    '(".projectile" ; carry over from projectile
      "deps.edn"
      "nbb.edn"
-     "shadow-cljs.edn")))
+     "shadow-cljs.edn"))
+  :config
+  (defun byronc/project-kill-relative-path ()
+    "Kill the project relative path of the file visited in the current buffer."
+    (interactive)
+    (if-let* ((file (buffer-file-name))
+              (project (project-current))
+              (root (project-root project))
+              (rel-path (file-relative-name file root)))
+        (progn
+          (kill-new rel-path)
+          (message "Copied: %s" rel-path))
+      (message "Not in a project or buffer has no file"))))
 
 (use-package envrc
   :hook (after-init . envrc-global-mode))
