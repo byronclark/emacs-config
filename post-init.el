@@ -962,9 +962,8 @@ With prefix ARG, create a new vterm buffer even if one already exists."
         (warn "Failed to install clojure-lsp automatically"))))
   :config
   (setq clojure-toplevel-inside-comment-form t)
-  :hook ((clojure-mode . (lambda ()
-                           (smartparens-strict-mode)
-                           (subword-mode 1)))
+  :hook ((clojure-mode . smartparens-strict-mode)
+         (clojure-mode . subword-mode)
          (clojure-mode . eglot-ensure)))
 
 (use-package cider
@@ -991,9 +990,8 @@ With prefix ARG, create a new vterm buffer even if one already exists."
   (defun portal.api/close ()
     (interactive)
     (cider-nrepl-sync-request:eval "(portal.api/close)"))
-  :hook ((cider-repl-mode . (lambda ()
-                              (smartparens-strict-mode 1)
-                              (subword-mode 1)))
+  :hook ((cider-repl-mode . smartparens-strict-mode)
+         (cider-repl-mode . subword-mode)
          (cider-mode . (lambda ()
                          (remove-hook 'completion-at-point-functions 'cider-complete-at-point)))))
 
