@@ -807,6 +807,7 @@ With prefix ARG, create a new vterm buffer even if one already exists."
   (agent-shell-agent-configs (list (agent-shell-anthropic-make-claude-code-config)
                                    (agent-shell-google-make-gemini-config)
                                    (agent-shell-openai-make-codex-config)))
+  ;; Configure global mcp servers in ~/.emacs.local.
   ;; Claude Code
   (agent-shell-anthropic-authentication (agent-shell-anthropic-make-authentication :login t))
   (agent-shell-anthropic-default-model-id "opus")
