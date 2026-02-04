@@ -96,7 +96,7 @@
   :ensure t
   :if (display-graphic-p)
   :custom
-  ;; (spacious-padding-subtle-frame-lines t)
+  (spacious-padding-subtle-frame-lines t)
   (spacious-padding-widths '(:internal-border-width 15
                              :header-line-width 4
                              :mode-line-width 6
@@ -281,7 +281,7 @@
   (which-key-max-description-length 40))
 
 (use-package editorconfig
-  :ensure t
+  :ensure nil
   :config
   (editorconfig-mode 1))
 
