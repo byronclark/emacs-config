@@ -923,7 +923,7 @@ With prefix ARG, create a new vterm buffer even if one already exists."
   (advice-add 'indent-region :around #'byronc/eglot-maybe-format-region)
   (add-to-list 'eglot-server-programs
                '((python-mode python-ts-mode) .
-                 ("rass" "python")))
+                 ("rass" "tyruff")))
   (add-to-list 'eglot-server-programs
                '((js-mode js-ts-mode typescript-mode typescript-ts-mode tsx-ts-mode) .
                  ("rass" "--" "typescript-language-server" "--stdio" "--" "vscode-eslint-language-server" "--stdio"))))
