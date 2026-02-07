@@ -1033,7 +1033,9 @@ With prefix ARG, create a new vterm buffer even if one already exists."
 ;; **** Python ****
 (use-package python
   :ensure nil
-  :hook (python-mode . eglot-ensure))
+  :hook
+  (python-mode . eglot-ensure)
+  (python-ts-mode . eglot-ensure))
 
 (use-package pyvenv-auto
   :ensure t
