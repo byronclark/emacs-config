@@ -800,17 +800,6 @@ With prefix ARG, create a new vterm buffer even if one already exists."
                                  google/gemini-3-pro-preview
                                  openai/gpt-5.2))))
 
-(use-package aidermacs
-  :ensure t
-  :bind (("C-c A" . aidermacs-transient-menu))
-  :config
-  (setenv "OPENROUTER_API_KEY" (auth-source-pick-first-password :host "openrouter.ai"))
-  :custom
-  (aidermacs-use-architect-mode t)
-  (aidermacs-default-model "openrouter/google/gemini-3-pro-preview")
-  (aidermacs-editor-model "openrouter/anthropic/claude-sonnet-4.5")
-  (aidermacs-weak-model "openrouter/anthropic/claude-haiku-4.5"))
-
 (use-package agent-shell
   :ensure t
   :custom
