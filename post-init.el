@@ -786,7 +786,7 @@ With prefix ARG, create a new vterm buffer even if one already exists."
                        :models '(anthropic/claude-sonnet-4.5
                                  google/gemini-3-flash-preview
                                  google/gemini-3-pro-preview
-                                 openai/gpt-5.1))))
+                                 openai/gpt-5.2))))
 
 (use-package aidermacs
   :ensure t
