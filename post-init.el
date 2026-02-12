@@ -96,7 +96,7 @@
   :ensure t
   :if (display-graphic-p)
   :custom
-  (spacious-padding-subtle-frame-lines t)
+  ;; (spacious-padding-subtle-frame-lines t)
   (spacious-padding-widths '(:internal-border-width 15
                              :header-line-width 4
                              :mode-line-width 6
@@ -170,7 +170,19 @@
   :config
   (mood-line-mode))
 
-(global-hl-line-mode 1)
+(use-package pulsar
+  :ensure t
+  :bind (:map global-map
+              ("C-x l" . pulsar-pulse-line))
+  :init
+  (pulsar-global-mode 1)
+  :hook (next-error . pulsar-pulse-line))
+
+(use-package hl-line
+  :ensure nil
+  :init
+  (global-hl-line-mode 1))
+
 (setq-default truncate-lines nil)
 
 ;; *** Behavior ***
