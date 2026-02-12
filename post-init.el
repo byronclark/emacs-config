@@ -1082,8 +1082,7 @@ With prefix ARG, create a new vterm buffer even if one already exists."
     ;; Some macOS builds of emacs have a strict limit of 1024 files that can be
     ;; _watched_ before they start spewing errors about too many open files.
     ;; lsp-mode is especially good at watching lots of files.
-    (setopt lsp-enable-file-watchers nil))
-  (server-start))
+    (setopt lsp-enable-file-watchers nil)))
 
 (use-package server
   :ensure nil
