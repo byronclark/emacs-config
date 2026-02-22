@@ -35,9 +35,6 @@
 
 (defvar byronc/emacs-local-init-dir (expand-file-name "init" byronc/emacs-local-dir))
 
-(when (file-exists-p byronc/emacs-local-init-dir)
-  (mapc 'load (directory-files byronc/emacs-local-init-dir 't "^[^#\.].*\\.el$")))
-
 (use-package auth-source
   :ensure nil
   :demand t
@@ -46,6 +43,9 @@
   :config
   (require 'epa-file)
   (epa-file-enable))
+
+(when (file-exists-p byronc/emacs-local-init-dir)
+  (mapc 'load (directory-files byronc/emacs-local-init-dir 't "^[^#\.].*\\.el$")))
 
 ;; *** Newer versions of built-in packages ***
 (use-package transient
