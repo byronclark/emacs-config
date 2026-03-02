@@ -1039,8 +1039,7 @@ With prefix ARG, create a new vterm buffer even if one already exists."
 
 ;; **** Terraform ****
 (use-package terraform-mode
-  :ensure t
-  :hook (terraform-mode . eglot-ensure))
+  :ensure t)
 
 ;; **** YAML ****
 (use-package yaml-mode
