@@ -586,8 +586,7 @@
          ("C-c c" . org-capture))
   :hook (org-mode . (lambda ()
                       (auto-fill-mode -1)
-                      (whitespace-mode -1)
-                      (visual-line-mode)))
+                      (whitespace-mode -1)))
   :config
   (setq
    ;; Edit settings
@@ -1061,6 +1060,8 @@ With prefix ARG, create a new vterm buffer even if one already exists."
   ("s-u" . revert-buffer)
   :hook
   (compilation-filter . ansi-color-compilation-filter)
+  (text-mode . visual-line-mode)
+  (text-mode . visual-wrap-prefix-mode)
   :config
   (when (eq system-type 'darwin)
     (setq mac-option-modifier 'meta)
