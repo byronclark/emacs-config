@@ -587,8 +587,7 @@
   :hook (org-mode . (lambda ()
                       (auto-fill-mode -1)
                       (whitespace-mode -1)
-                      (visual-line-mode)
-                      (variable-pitch-mode)))
+                      (visual-line-mode)))
   :config
   (setq
    ;; Edit settings
@@ -642,14 +641,6 @@
   (verb-auto-kill-response-buffers t)
   :config
   (define-key org-mode-map (kbd "C-c C-r") verb-command-map))
-
-(use-package org-modern
-  :ensure t
-  :after org
-  :custom
-  (org-modern-checkbox nil) ;org-modern checkboxes only work well with iosevka fonts
-  :config
-  (global-org-modern-mode))
 
 (use-package org-roam
   :ensure t
