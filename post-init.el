@@ -792,6 +792,7 @@ With prefix ARG, create a new vterm buffer even if one already exists."
 
 (use-package agent-shell
   :ensure t
+  :after auth-source
   :custom
   (agent-shell-prefer-viewport-interaction t)
   (agent-shell-context-sources '(files region error))
@@ -799,12 +800,14 @@ With prefix ARG, create a new vterm buffer even if one already exists."
                                    (agent-shell-google-make-gemini-config)
                                    (agent-shell-openai-make-codex-config)))
   (agent-shell-session-strategy 'new)   ;Change this when agents start working better as a continuous single session.
+  (agent-shell-show-usage-at-turn-end t)
   ;; Configure global mcp servers in ~/.emacs.local.
   ;; Claude Code
   (agent-shell-anthropic-authentication (agent-shell-anthropic-make-authentication :login t))
   (agent-shell-anthropic-default-session-mode-id "plan")
   :config
-  (setq agent-shell-anthropic-claude-environment (agent-shell-make-environment-variables :inherit-env t))
+  (setq agent-shell-anthropic-claude-environment
+        (agent-shell-make-environment-variables :inherit-env t))
   :commands (agent-shell))
 
 ;; **** Source Control ****
