@@ -800,7 +800,6 @@ With prefix ARG, create a new vterm buffer even if one already exists."
                                    (agent-shell-google-make-gemini-config)
                                    (agent-shell-openai-make-codex-config)))
   (agent-shell-session-strategy 'new)   ;Change this when agents start working better as a continuous single session.
-  (agent-shell-show-usage-at-turn-end t)
   ;; Configure global mcp servers in ~/.emacs.local.
   ;; Claude Code
   (agent-shell-anthropic-authentication (agent-shell-anthropic-make-authentication :login t))
