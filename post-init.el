@@ -143,6 +143,13 @@
              :variable-pitch-family "Source Sans 3"
              :variable-pitch-height 1.1
              :italic-slant italic)
+            (macbook-external
+             :default-family "Maple Mono"
+             :default-height 140
+             :fixed-pitch-family "Maple Mono"
+             :variable-pitch-family "Source Sans 3"
+             :variable-pitch-height 1.1
+             :italic-slant italic)
             (macbook-berkeley
              :default-family "Berkeley Mono"
              :default-height 150
