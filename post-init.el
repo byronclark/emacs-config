@@ -799,6 +799,7 @@ With prefix ARG, create a new vterm buffer even if one already exists."
   (agent-shell-agent-configs (list (agent-shell-anthropic-make-claude-code-config)
                                    (agent-shell-google-make-gemini-config)
                                    (agent-shell-openai-make-codex-config)))
+  (agent-shell-busy-indicator-frames 'dots-block)
   (agent-shell-session-strategy 'new)   ;Change this when agents start working better as a continuous single session.
   ;; Configure global mcp servers in ~/.emacs.local.
   ;; Claude Code
@@ -913,13 +914,13 @@ With prefix ARG, create a new vterm buffer even if one already exists."
              (eglot--server-capable :documentRangeFormattingProvider))
         (eglot-format beg end)
       (funcall orig-fun beg end arg)))
-  (advice-add 'indent-region :around #'byronc/eglot-maybe-format-region)
-  (add-to-list 'eglot-server-programs
-               '((python-mode python-ts-mode) .
-                 ("rass" "tyruff")))
-  (add-to-list 'eglot-server-programs
-               '((js-mode js-ts-mode typescript-mode typescript-ts-mode tsx-ts-mode) .
-                 ("rass" "--" "typescript-language-server" "--stdio" "--" "vscode-eslint-language-server" "--stdio"))))
+  (advice-add 'indent-region :around #'byronc/eglot-maybe-format-region))
+
+(use-package eglot-multi-preset
+  :ensure t
+  :vc (:url "https://github.com/kn66/eglot-multi-preset.git" :rev :newest)
+  :config
+  (eglot-multi-preset-mode 1))
 
 (use-package treesit-auto
   :custom
