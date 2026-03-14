@@ -955,17 +955,6 @@ With prefix ARG, create a new vterm buffer even if one already exists."
   :pin melpa-stable
   :after smartparens
   :mode "\\.fiddle\\'" ;Calva fiddle
-  :init
-  (unless (executable-find "clojure-lsp")
-    (let ((command (format "%s --dir %s"
-            (expand-file-name "scripts/install-clojure-lsp.sh"
-                              minimal-emacs-user-directory)
-            (expand-file-name "~/.local/bin"))))
-      (message "Installing clojure-lsp using %s" command)
-      (shell-command command)
-
-      (unless (executable-find "clojure-lsp")
-        (warn "Failed to install clojure-lsp automatically"))))
   :config
   (setq clojure-toplevel-inside-comment-form t)
   :hook ((clojure-mode . smartparens-strict-mode)
