@@ -918,6 +918,7 @@ With prefix ARG, create a new vterm buffer even if one already exists."
   (eglot-ignored-server-capabilites '(:inlayHintProvider))
   (eglot-extend-to-xref nil)
   (eglot-confirm-server-initiated-edits nil)
+  (eglot-code-action-indicator nil)
   :config
   (defun byronc/eglot-maybe-format-region (orig-fun beg end &optional arg)
     (if (and (bound-and-true-p eglot--managed-mode)
