@@ -50,6 +50,7 @@
 ;; *** Newer versions of built-in packages ***
 (use-package transient
   :ensure t
+  :pin melpa-stable
   :demand t)
 
 ;; *** Appearance ***
@@ -820,6 +821,7 @@ With prefix ARG, create a new vterm buffer even if one already exists."
 ;; **** Source Control ****
 (use-package magit
   :ensure t
+  :pin melpa-stable
   :demand t
   :after project
   :custom
@@ -830,6 +832,7 @@ With prefix ARG, create a new vterm buffer even if one already exists."
 
 (use-package forge
   :ensure t
+  :pin melpa-stable
   :defer t
   :after magit)
 
