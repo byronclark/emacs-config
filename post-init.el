@@ -800,7 +800,7 @@ With prefix ARG, create a new vterm buffer even if one already exists."
 
 (use-package agent-shell
   :ensure t
-  :after auth-source
+  :after (auth-source corfu)
   :custom
   (agent-shell-prefer-viewport-interaction t)
   (agent-shell-context-sources '(files region error))
@@ -903,7 +903,7 @@ With prefix ARG, create a new vterm buffer even if one already exists."
         (setq buffer-display-table display-table))))))
 
 (use-package eglot
-  :ensure nil
+  :ensure t
   :commands (eglot-ensure
              eglot-rename
              eglot-format-buffer)
@@ -918,7 +918,7 @@ With prefix ARG, create a new vterm buffer even if one already exists."
   (eglot-ignored-server-capabilites '(:inlayHintProvider))
   (eglot-extend-to-xref nil)
   (eglot-confirm-server-initiated-edits nil)
-  (eglot-code-action-indicator nil)
+  (eglot-code-action-indicator "α")
   :config
   (defun byronc/eglot-maybe-format-region (orig-fun beg end &optional arg)
     (if (and (bound-and-true-p eglot--managed-mode)
