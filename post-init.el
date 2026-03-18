@@ -553,7 +553,8 @@
 
   :hook ((prog-mode . corfu-mode)
          (shell-mode . corfu-mode)
-         (eshell-mode . corfu-mode))
+         (eshell-mode . corfu-mode)
+         (agent-shell-mode . corfu-mode))
 
   :custom
   (read-extended-command-predicate #'command-completion-default-include-p)
@@ -800,7 +801,7 @@ With prefix ARG, create a new vterm buffer even if one already exists."
 
 (use-package agent-shell
   :ensure t
-  :after (auth-source corfu)
+  :after auth-source
   :custom
   (agent-shell-prefer-viewport-interaction t)
   (agent-shell-context-sources '(files region error))
