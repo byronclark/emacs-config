@@ -268,24 +268,17 @@
 
 (use-package super-save
   :ensure t
+  :custom
+  (super-save-auto-save-when-idle t)
+  (super-save-idle-duration 60)
+
   :config
-  (defun byronc/super-save-disable-advice (orig-fun &rest args)
-    "Skip auto-save for these conditions. See https://github.com/bbatsov/super-save/issues/38#issuecomment-1229537100"
-    (unless (equal (car args) " *LV*")  ;lv-message (used by lsp-mode signature display) switches buffers.
-      (apply orig-fun args)))
-  (advice-add 'super-save-command-advice :around #'byronc/super-save-disable-advice)
-  (add-to-list 'super-save-triggers 'ace-window)
   ;; Disable super-save in situations where it doesn't work well:
   ;; - org-mode: spaces removed after every org-roam-node-insert
   ;; - hexl-mode: saves the hexl format of the file
   (add-to-list 'super-save-predicates (lambda ()
                                         (not (memq major-mode '(org-mode hexl-mode)))))
-  (super-save-mode))
-
-;; Enable periodic saving so that we don't lose changes on modes that don't work
-;; well with super-save.
-(setopt auto-save-visited-interval 60)
-(auto-save-visited-mode 1)
+  :hook (after-init . super-save-mode))
 
 ;; **** Miscellaneous ****
 (setq warning-minimum-level :error)
