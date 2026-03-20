@@ -166,7 +166,7 @@
              :italic-slant italic)
             (macbook-shared
              :inherit macbook
-             :default-height 190)))
+             :default-height 210)))
 
   :config
   (fontaine-set-preset (or (fontaine-restore-latest-preset)
