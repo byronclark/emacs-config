@@ -221,14 +221,6 @@
   :bind (("s-," . avy-goto-char-timer)
          ("M-g l" . avy-goto-line)))
 
-(use-package anzu
-  :ensure t
-  :demand t
-  :bind (([remap query-replace] . anzu-query-replace)
-         ([remap query-replace-regexp] . anzu-query-replace-regexp))
-  :config
-  (global-anzu-mode))
-
 (use-package ace-window
   :ensure t
   :bind ([remap other-window] . ace-window)
@@ -1059,6 +1051,9 @@ With prefix ARG, create a new vterm buffer even if one already exists."
   (compilation-filter . ansi-color-compilation-filter)
   (text-mode . visual-line-mode)
   (text-mode . visual-wrap-prefix-mode)
+  :custom
+  (isearch-lazy-count t)
+  (lazy-count-prefix-format "(%s/%s) ")
   :config
   (when (eq system-type 'darwin)
     (setq mac-option-modifier 'meta)
