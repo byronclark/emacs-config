@@ -847,6 +847,11 @@ With prefix ARG, create a new vterm buffer even if one already exists."
         sp-autoskip-closing-pair 'always
         sp-hybrid-kill-entire-symbol nil)
   (sp-use-paredit-bindings)
+  ;; Switch sp-splice-sexp so consult and friends can have the binding.
+  (define-key smartparens-mode-map (kbd "M-s") nil)
+  (define-key smartparens-mode-map (kbd "M-D") #'sp-splice-sexp)
+  ;; Unbind sp-convolute-sexp so xref can use it
+  (define-key smartparens-mode-map (kbd "M-?") nil)
   (show-smartparens-global-mode 1))
 
 (use-package rainbow-delimiters
@@ -933,12 +938,6 @@ With prefix ARG, create a new vterm buffer even if one already exists."
   :after eglot
   :config
   (jarchive-setup))
-
-(use-package xref
-  :ensure nil
-  :demand t
-  :bind (("C-c e ?" . xref-find-references) ;M-? is taken by smartparens
-         ))
 
 ;; **** Languages ****
 ;; ***** Clojure *****
