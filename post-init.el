@@ -71,27 +71,13 @@
   :custom
   (modus-themes-to-toggle '(ef-frost ef-owl))
   :config
-  (modus-themes-select 'ef-owl)
+  ;; (modus-themes-select 'ef-owl)
   )
 
-(use-package modus-catppuccin
-  :ensure t
-  :vc (:url "https://gitlab.com/byronclark/modus-catppuccin.git" :rev :newest)
-  ;; :custom
-  ;; (modus-themes-to-toggle '(catppuccin-latte catppuccin-frappe))
-  ;; :config
-  ;; (modus-themes-select 'catppuccin-frappe)
-  )
-
-(use-package doom-themes
-  :ensure t
-  :custom
-  (doom-themes-enable-bold nil)
-  (doom-themes-enable-italic t)
+(use-package batppuccin-themes
+  :vc (:url "https://github.com/bbatsov/batppuccin-emacs" :rev :newest)
   :config
-  ;; (load-theme 'doom-one :no-confirm)
-  ;; (doom-themes-org-config)
-  )
+  (load-theme 'batppuccin-frappe t))
 
 (use-package spacious-padding
   :ensure t
