@@ -776,9 +776,7 @@ With prefix ARG, create a new vterm buffer even if one already exists."
   :custom
   (agent-shell-prefer-viewport-interaction t)
   (agent-shell-context-sources '(files region error))
-  (agent-shell-agent-configs (list (agent-shell-anthropic-make-claude-code-config)
-                                   (agent-shell-google-make-gemini-config)
-                                   (agent-shell-openai-make-codex-config)))
+  (agent-shell-agent-configs (list (agent-shell-anthropic-make-claude-code-config)))
   (agent-shell-busy-indicator-frames 'dots-block)
   (agent-shell-session-strategy 'new)   ;Change this when agents start working better as a continuous single session.
   ;; Configure global mcp servers in ~/.emacs.local.
