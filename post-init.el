@@ -76,8 +76,17 @@
 
 (use-package batppuccin-themes
   :vc (:url "https://github.com/bbatsov/batppuccin-emacs" :rev :newest)
-  :config
-  (load-theme 'batppuccin-frappe t))
+  ;; :config
+  ;; (load-theme 'batppuccin-frappe t)
+  )
+
+(use-package auto-dark
+  :ensure t
+  :custom
+  (custom-safe-themes t)
+  (auto-dark-themes '((batppuccin-macchiato) (batppuccin-latte)))
+  :init
+  (auto-dark-mode))
 
 (use-package spacious-padding
   :ensure t
