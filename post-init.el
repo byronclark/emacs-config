@@ -676,6 +676,13 @@
   (:map markdown-mode-map
         ("C-c C-e" . markdown-do)))
 
+(use-package markdown-mermaid
+  :ensure t
+  :after markdown-mode
+  :commands (markdown-mermaid-preview)
+  :bind (:map markdown-mode-map
+         ("C-c m" . markdown-mermaid-preview)))
+
 ;; *** Development ***
 (use-package eldoc
   :ensure nil
