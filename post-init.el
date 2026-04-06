@@ -74,7 +74,7 @@
   ;; (modus-themes-select 'ef-owl)
   )
 
-(use-package batppuccin-themes
+(use-package batppuccin
   :vc (:url "https://github.com/bbatsov/batppuccin-emacs" :rev :newest)
   ;; :config
   ;; (load-theme 'batppuccin-frappe t)
