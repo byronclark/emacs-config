@@ -798,7 +798,7 @@ With prefix ARG, create a new vterm buffer even if one already exists."
   ;; Configure global mcp servers in ~/.emacs.local.
   ;; Claude Code
   (agent-shell-anthropic-authentication (agent-shell-anthropic-make-authentication :login t))
-  (agent-shell-anthropic-default-session-mode-id "plan")
+  ;;(agent-shell-anthropic-default-session-mode-id "plan")
   :config
   (setq agent-shell-anthropic-claude-environment
         (agent-shell-make-environment-variables :inherit-env t))
