@@ -1050,9 +1050,11 @@ With prefix ARG, create a new vterm buffer even if one already exists."
   (compilation-filter . ansi-color-compilation-filter)
   (text-mode . visual-line-mode)
   (text-mode . visual-wrap-prefix-mode)
+  (after-save . executable-make-buffer-file-executable-if-script-p)
   :custom
   (isearch-lazy-count t)
   (lazy-count-prefix-format "(%s/%s) ")
+  (window-combination-resize t)
   :config
   (when (eq system-type 'darwin)
     (setq mac-option-modifier 'meta)
