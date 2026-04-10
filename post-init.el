@@ -1055,7 +1055,9 @@ With prefix ARG, create a new vterm buffer even if one already exists."
   (isearch-lazy-count t)
   (lazy-count-prefix-format "(%s/%s) ")
   (window-combination-resize t)
+  (set-mark-command-repeat-pop t)
   :config
+  ;; macOS specifics
   (when (eq system-type 'darwin)
     (setq mac-option-modifier 'meta)
     (setq mac-command-modifier 'super)
