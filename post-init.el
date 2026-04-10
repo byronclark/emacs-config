@@ -146,6 +146,13 @@
              :variable-pitch-family "Source Sans 3"
              :variable-pitch-height 1.1
              :italic-slant italic)
+            (macbook-0xProto
+             :default-family "0xProto"
+             :default-height 140
+             :fixed-pitch-family "0xProto"
+             :variable-pitch-family "Source Sans 3"
+             :variable-pitch-height 1.1
+             :italic-slant italic)
             (macbook-external
              :default-family "Maple Mono"
              :default-height 140
