@@ -131,7 +131,7 @@
              :italic-slant italic)
             (regular-inconsolata
              :default-family "Inconsolata"
-             :default-height 160
+             :default-height 150
              :fixed-pitch-family "Inconsolata"
              :variable-pitch-family "Source Sans 3"
              :variable-pitch-height 1.0
