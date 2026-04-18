@@ -647,6 +647,8 @@
 (use-package org-roam
   :ensure t
   :after org
+  :commands (org-roam-node-find
+             org-roam-node-search)
   :bind (("C-c n j" . org-roam-dailies-capture-today)
          ("C-c n d" . org-roam-dailies-goto-today)
          :map org-mode-map
@@ -677,7 +679,7 @@
 
 (use-package consult-org-roam
   :ensure t
-  :after (org consult)
+  :after consult
   :bind (("C-c n f" . consult-org-roam-file-find)
          ("C-c n s" . consult-org-roam-search))
   :config
