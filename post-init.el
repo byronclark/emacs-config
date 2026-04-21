@@ -814,10 +814,11 @@ With prefix ARG, create a new vterm buffer even if one already exists."
   ;;(agent-shell-anthropic-default-session-mode-id "plan")
   :config
   (setq agent-shell-anthropic-claude-environment
-        ;; 1m token context window is not really a win in most cases.
-        ;; Artificially limit the window until we have a better option.
-        "CLAUDE_CODE_AUTO_COMPACT_WINDOW" "400000"
-        (agent-shell-make-environment-variables :inherit-env t))
+        (agent-shell-make-environment-variables
+         ;; 1m token context window is not really a win in most cases.
+         ;; Artificially limit the window until we have a better option.
+         "CLAUDE_CODE_AUTO_COMPACT_WINDOW" "400000"
+         :inherit-env t))
   :commands (agent-shell))
 
 ;; **** Source Control ****
