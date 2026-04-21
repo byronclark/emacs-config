@@ -75,10 +75,7 @@
   )
 
 (use-package batppuccin
-  :vc (:url "https://github.com/bbatsov/batppuccin-emacs" :rev :newest)
-  ;; :config
-  ;; (load-theme 'batppuccin-frappe t)
-  )
+  :ensure t)
 
 (use-package auto-dark
   :ensure t
