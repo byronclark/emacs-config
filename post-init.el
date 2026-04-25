@@ -310,8 +310,6 @@
   (uniquify-separator "•")
   (uniquify-after-kill-buffer-p t))
 
-(add-hook 'dired-mode-hook #'dired-hide-details-mode)
-
 ;; **** History ****
 (use-package autorevert
   :ensure nil
@@ -384,6 +382,16 @@
   (consult-customize consult-source-buffer :hidden t :default nil)
   (add-to-list 'consult-buffer-sources persp-consult-source)
   (persp-mode))
+
+(use-package dired
+  :ensure nil
+  :hook
+  (dired-mode . dired-hide-details-mode))
+
+(use-package dired-preview
+  :ensure t
+  :hook
+  (dired-mode . dired-preview-mode))
 
 (use-package casual
   :ensure t
