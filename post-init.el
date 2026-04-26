@@ -575,13 +575,51 @@
 ;; *** Content ***
 (use-package elfeed
   :ensure t
-  :defer t
   :init
   (setq-default elfeed-search-filter "@2-months-ago +unread ")
   (setopt elfeed-sort-order 'ascending)
 
   :hook (kill-emacs . elfeed-db-compact)
   :bind ("C-x w" . elfeed))
+
+(use-package elfeed-tube
+  :ensure t
+  :after elfeed
+  :demand t
+  :config
+  (elfeed-tube-setup)
+  :bind (:map elfeed-show-mode-map
+         ("F" . elfeed-tube-fetch)
+         ([remap save-buffer] . elfeed-tube-save)
+         :map elfeed-search-mode-map
+         ("F" . elfeed-tube-fetch)
+         ([remap save-buffer] . elfeed-tube-save)))
+
+(use-package shr
+  :ensure nil
+  :demand t
+  :config
+  (setq shr-width 100
+        shr-max-width 120
+        shr-indentation 4
+        shr-use-fonts nil
+        shr-max-image-size '(800 . 600)
+        shr-image-animate t))
+
+(use-package eww
+  :ensure nil
+  :demand t
+  :init
+  (defun byronc/browse-url-pdf (url &rest _args)
+    (let ((tmp (make-temp-file "emacs-pdf-" nil ".pdf")))
+      (url-copy-file url tmp t)
+      (find-file-other-window tmp)
+      (pdf-view-mode)))
+  :config
+  (setq browse-url-handlers
+        '(("\\.pdf$" . byronc/browse-url-pdf)
+          ("." . eww-browse-url)))
+  (setq browse-url-secondary-browser-function 'browse-url-generic))
 
 ;; **** Information Management ****
 (use-package org
