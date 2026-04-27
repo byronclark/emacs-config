@@ -619,7 +619,7 @@
   (setq browse-url-handlers
         '(("\\.pdf$" . byronc/browse-url-pdf)
           ("." . eww-browse-url)))
-  (setq browse-url-secondary-browser-function 'browse-url-generic))
+  (setq browse-url-secondary-browser-function 'browse-url-default-browser))
 
 ;; **** Information Management ****
 (use-package org
