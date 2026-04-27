@@ -618,6 +618,7 @@
   :config
   (setq browse-url-handlers
         '(("\\.pdf$" . byronc/browse-url-pdf)
+          ("github\\.com\\|gitlab\\.com" . browse-url-default-browser)
           ("." . eww-browse-url)))
   (setq browse-url-secondary-browser-function 'browse-url-default-browser))
 
