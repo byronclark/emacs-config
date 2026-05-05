@@ -599,8 +599,8 @@
   :ensure nil
   :demand t
   :config
-  (setq shr-width 100
-        shr-max-width 120
+  (setq shr-width nil
+        shr-max-width 100
         shr-indentation 4
         shr-use-fonts nil
         shr-max-image-size '(800 . 600)
