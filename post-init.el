@@ -852,13 +852,15 @@ With prefix ARG, create a new vterm buffer even if one already exists."
   :custom
   (agent-shell-prefer-viewport-interaction t)
   (agent-shell-context-sources '(files region error))
-  (agent-shell-agent-configs (list (agent-shell-anthropic-make-claude-code-config)))
+  (agent-shell-agent-configs (list (agent-shell-anthropic-make-claude-code-config)
+                                   (agent-shell-openai-make-codex-config)))
   (agent-shell-busy-indicator-frames 'dots-block)
-  (agent-shell-session-strategy 'new)   ;Change this when agents start working better as a continuous single session.
+  (agent-shell-session-strategy 'prompt)
   ;; Configure global mcp servers in ~/.emacs.local.
   ;; Claude Code
   (agent-shell-anthropic-authentication (agent-shell-anthropic-make-authentication :login t))
-  ;;(agent-shell-anthropic-default-session-mode-id "plan")
+  ;; Codex
+  (agent-shell-openai-authentication (agent-shell-openai-make-authentication :api-key (lambda () (auth-source-pick-first-password :host "codex.openai"))))
   :config
   (setq agent-shell-anthropic-claude-environment
         (agent-shell-make-environment-variables
