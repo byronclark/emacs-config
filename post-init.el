@@ -1029,6 +1029,7 @@ With prefix ARG, create a new vterm buffer even if one already exists."
   (cider-repl-display-help-banner nil)
   (cider-repl-display-in-current-window t)
   (cider-eldoc-display-for-symbol-at-point nil)
+  (cider-enable-nrepl-jvmti-agent t)
   (cider-nbb-command "npx nbb") ;Prefer project version of nbb.
   :config
   ;; cider portal integration (see https://cljdoc.org/d/djblue/portal/0.58.5/doc/editors/emacs)
