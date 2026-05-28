@@ -853,7 +853,8 @@ With prefix ARG, create a new vterm buffer even if one already exists."
   (agent-shell-prefer-viewport-interaction t)
   (agent-shell-context-sources '(files region error))
   (agent-shell-agent-configs (list (agent-shell-anthropic-make-claude-code-config)
-                                   (agent-shell-openai-make-codex-config)))
+                                   (agent-shell-openai-make-codex-config)
+                                   (agent-shell-opencode-make-agent-config)))
   (agent-shell-busy-indicator-frames 'dots-block)
   (agent-shell-session-strategy 'prompt)
   ;; Configure global mcp servers in ~/.emacs.local.
