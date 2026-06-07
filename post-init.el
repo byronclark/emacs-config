@@ -7,6 +7,7 @@
   (compile-angel-verbose t)
 
   :config
+  (setq package-native-compile nil)
   (push "/init.el" compile-angel-excluded-files)
   (push "/early-init.el" compile-angel-excluded-files)
   (push "/pre-init.el" compile-angel-excluded-files)
@@ -351,12 +352,8 @@
   :hook
   (after-init . savehist-mode)
   :custom
-  (savehist-autosave-interval 600)
-  (savehist-additional-variables
-   '(kill-ring                        ; clipboard
-     register-alist                   ; macros
-     mark-ring global-mark-ring       ; marks
-     search-ring regexp-search-ring)))
+  (history-length 300)
+  (savehist-autosave-interval 600))
 
 (use-package saveplace
   :ensure nil
@@ -816,6 +813,10 @@ With prefix ARG, create a new vterm buffer even if one already exists."
   :custom
   (vterm-always-compile-module t)
   (vterm-min-window-width 40)
+  (vterm-kill-buffer-on-exit t)
+  (vterm-max-scrollback 8000)
+  :config
+  (setq vterm-timer-delay 0.05)
   :commands (vterm
              project-vterm)
   :bind (("C-c t" . project-vterm)
