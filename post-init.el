@@ -864,6 +864,7 @@ With prefix ARG, create a new vterm buffer even if one already exists."
   ;; Configure global mcp servers in ~/.emacs.local.
   ;; Claude Code
   (agent-shell-anthropic-authentication (agent-shell-anthropic-make-authentication :login t))
+  (agent-shell-anthropic-default-session-mode-id "auto")
   ;; Codex
   (agent-shell-openai-authentication (agent-shell-openai-make-authentication :api-key (lambda () (auth-source-pick-first-password :host "codex.openai"))))
   :config
