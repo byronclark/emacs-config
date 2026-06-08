@@ -36,14 +36,17 @@
 
 (defvar byronc/emacs-local-init-dir (expand-file-name "init" byronc/emacs-local-dir))
 
+(use-package epa-file
+  :ensure nil
+  :custom
+  (epg-pinentry-mode nil)
+  :hook
+  (after-init . epa-file-enable))
+
 (use-package auth-source
   :ensure nil
-  :demand t
   :custom
-  (auth-sources (list (expand-file-name "secrets/.authinfo.gpg" byronc/emacs-local-dir)))
-  :config
-  (require 'epa-file)
-  (epa-file-enable))
+  (auth-sources (list (expand-file-name "secrets/.authinfo.gpg" byronc/emacs-local-dir))))
 
 (when (file-exists-p byronc/emacs-local-init-dir)
   (mapc 'load (directory-files byronc/emacs-local-init-dir 't "^[^#\.].*\\.el$")))
