@@ -769,7 +769,7 @@
    '((project-find-file "Find file")
      (consult-ripgrep "Find regexp")
      (project-find-dir "Find directory")
-     (project-vterm "Terminal")
+     (ghostel-project "Terminal")
      (magit-project-status "Magit")))
   (project-vc-extra-root-markers
    '(".projectile" ; carry over from projectile
@@ -797,37 +797,16 @@
   :hook (prog-mode . mise-mode))
 
 ;; **** Terminal ****
-(use-package vterm
+(use-package ghostel
   :ensure t
-  :defer t
-  :preface
-  (defun project-vterm (&optional arg)
-    "Start a vterm session in the current project's root directory.
-Like `project-shell' but using vterm instead.
-
-With prefix ARG, create a new vterm buffer even if one already exists."
-    (interactive "P")
-    (let* ((default-directory (project-root (project-current t)))
-           (default-project-vterm-name (project-prefixed-buffer-name "vterm"))
-           (vterm-buffer (get-buffer default-project-vterm-name)))
-      (if (and vterm-buffer (not arg))
-          (pop-to-buffer vterm-buffer)
-        (vterm (generate-new-buffer-name default-project-vterm-name)))))
+  :pin melpa-stable ; matching binary is only available for released versions
   :custom
-  (vterm-always-compile-module t)
-  (vterm-min-window-width 40)
-  (vterm-kill-buffer-on-exit t)
-  (vterm-max-scrollback 8000)
-  :config
-  (setq vterm-timer-delay 0.05)
-  :commands (vterm
-             project-vterm)
-  :bind (("C-c t" . project-vterm)
+  (ghostel-module-auto-install 'download)
+  :bind (("C-c t" . ghostel)
          :map project-prefix-map
-         ("t" . project-vterm))
-  :hook
-  (vterm-mode . (lambda () (setq-local global-hl-line-mode nil)))
-  (vterm-copy-mode . (lambda () (call-interactively 'hl-line-mode))))
+         ("t" . ghostel-project))
+  :commands (ghostel
+             ghostel-project))
 
 ;; **** Machine intelligence ****
 (use-package gptel
