@@ -808,6 +808,10 @@
   :commands (ghostel
              ghostel-project))
 
+(use-package ghostel-compile
+  :ensure nil
+  :hook (after-init . ghostel-compile-global-mode))
+
 ;; **** Machine intelligence ****
 (use-package gptel
   :ensure t
