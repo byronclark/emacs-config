@@ -800,9 +800,15 @@
 (use-package ghostel
   :ensure t
   :pin melpa-stable ; matching binary is only available for released versions
+  :preface
+  (defun byronc/ghostel-dwim ()
+    (interactive)
+    (if (project-current)
+        (call-interactively #'ghostel-project)
+      (call-interactively #'ghostel)))
   :custom
   (ghostel-module-auto-install 'download)
-  :bind (("C-c t" . ghostel)
+  :bind (("C-c t" . byronc/ghostel-dwim)
          :map project-prefix-map
          ("t" . ghostel-project))
   :commands (ghostel
