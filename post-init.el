@@ -834,10 +834,10 @@
                        :endpoint "/api/v1/chat/completions"
                        :stream t
                        :key (auth-source-pick-first-password :host "openrouter.ai")
-                       :models '(anthropic/claude-sonnet-4.5
-                                 google/gemini-3-flash-preview
-                                 google/gemini-3-pro-preview
-                                 openai/gpt-5.2))))
+                       :models '(anthropic/claude-opus-latest
+                                 anthropic/claude-sonnet-latest
+                                 google/gemini-flash-latest
+                                 openai/gpt-chat-latest))))
 
 (use-package agent-shell
   :ensure t
