@@ -122,13 +122,6 @@
              :variable-pitch-family "Source Sans 3"
              :variable-pitch-height 1.1
              :italic-slant italic)
-            (regular-0xProto
-             :default-family "0xProto"
-             :default-height 140
-             :fixed-pitch-family "0xProto"
-             :variable-pitch-family "Source Sans 3"
-             :variable-pitch-height 1.1
-             :italic-slant italic)
             (regular-inconsolata
              :default-family "Inconsolata"
              :default-height 160
@@ -143,13 +136,6 @@
              :default-family "Maple Mono"
              :default-height 150
              :fixed-pitch-family "Maple Mono"
-             :variable-pitch-family "Source Sans 3"
-             :variable-pitch-height 1.1
-             :italic-slant italic)
-            (macbook-0xProto
-             :default-family "0xProto"
-             :default-height 140
-             :fixed-pitch-family "0xProto"
              :variable-pitch-family "Source Sans 3"
              :variable-pitch-height 1.1
              :italic-slant italic)
