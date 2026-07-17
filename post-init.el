@@ -3,11 +3,10 @@
 (use-package compile-angel
   :demand t
   :ensure t
-  :custom
-  (compile-angel-verbose t)
-
   :config
   (setq package-native-compile nil)
+  (setq compile-angel-verbose t)
+
   (push "/init.el" compile-angel-excluded-files)
   (push "/early-init.el" compile-angel-excluded-files)
   (push "/pre-init.el" compile-angel-excluded-files)
@@ -19,11 +18,11 @@
 
 (use-package exec-path-from-shell
   :ensure t
-  :if (memq window-system '(mac ns x pgtk))
-  :custom
-  (exec-path-from-shell-arguments '("-l"))
+  :if (or (display-graphic-p) (daemonp))
+  :demand t
+  :functions exec-path-from-shell-initialize
   :config
-  (dolist (env-var '("JAVA_HOME"))
+  (dolist (env-var '("TMPDIR" "SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO" "LANG" "LC_CTYPE" "JAVA_HOME"))
     (add-to-list 'exec-path-from-shell-variables env-var))
   (exec-path-from-shell-initialize))
 
