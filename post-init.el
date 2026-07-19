@@ -617,8 +617,7 @@
          ("C-c l" . org-switch-link)
          ("C-c c" . org-capture))
   :hook (org-mode . (lambda ()
-                      (auto-fill-mode -1)
-                      (whitespace-mode -1)))
+                      (auto-fill-mode -1)))
   :config
   (setq
    ;; Edit settings
