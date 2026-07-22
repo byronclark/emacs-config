@@ -829,11 +829,20 @@
   :custom
   (agent-shell-prefer-viewport-interaction t)
   (agent-shell-context-sources '(files region error))
+  (agent-shell-busy-indicator-frames 'dots-block)
+  (agent-shell-activity-group-header-label-function #'agent-shell-activity-group-count-label)
+
+  (agent-shell-session-strategy 'prompt)
+  (agent-shell-session-choices-function
+   (lambda (choices)
+     (seq-remove (lambda (choice)
+                   (eq (cdr choice) :downloads-shell))
+                 choices)))
   (agent-shell-agent-configs (list (agent-shell-anthropic-make-claude-code-config)
                                    (agent-shell-openai-make-codex-config)
                                    (agent-shell-opencode-make-agent-config)))
-  (agent-shell-busy-indicator-frames 'dots-block)
-  (agent-shell-session-strategy 'prompt)
+  (agent-shell-preferred-agent-config '(preselect . claude-code))
+
   ;; Configure global mcp servers in ~/.emacs.local.
   ;; Claude Code
   (agent-shell-anthropic-authentication (agent-shell-anthropic-make-authentication :login t))
