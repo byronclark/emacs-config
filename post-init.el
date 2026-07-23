@@ -830,7 +830,6 @@
   (agent-shell-prefer-viewport-interaction t)
   (agent-shell-context-sources '(files region error))
   (agent-shell-busy-indicator-frames 'dots-block)
-  (agent-shell-activity-group-header-label-function #'agent-shell-activity-group-count-label)
 
   (agent-shell-session-strategy 'prompt)
   (agent-shell-session-choices-function
@@ -850,6 +849,7 @@
   ;; Codex
   (agent-shell-openai-authentication (agent-shell-openai-make-authentication :api-key (lambda () (auth-source-pick-first-password :host "codex.openai"))))
   :config
+  (setq agent-shell-activity-group-header-label-function #'agent-shell-activity-group-tally-label)
   (setq agent-shell-anthropic-claude-environment
         (agent-shell-make-environment-variables
          ;; 1m token context window is not really a win in most cases.
