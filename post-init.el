@@ -652,10 +652,10 @@
                         ("someday.org" :level . 1)
                         ("tickler.org" :maxlevel . 2))
    org-capture-templates '(("t" "Todo [inbox]" entry
-                            (file+headline "inbox.org" "Tasks")
+                            (file "inbox.org")
                             "* TODO %i%?")
                            ("T" "Tickler" entry
-                            (file+headline "tickler.org" "Tickler")
+                            (file+headline "tickler.org")
                             "* %i%? \n %U"))
 
    org-todo-keywords '((sequence "TODO(t)" "WAITING(w@/!)" "|" "DONE(d!)" "CANCELLED(c@)"))
