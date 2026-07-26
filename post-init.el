@@ -655,7 +655,7 @@
                             (file "inbox.org")
                             "* TODO %i%?")
                            ("T" "Tickler" entry
-                            (file+headline "tickler.org")
+                            (file "tickler.org")
                             "* %i%? \n %U"))
 
    org-todo-keywords '((sequence "TODO(t)" "WAITING(w@/!)" "|" "DONE(d!)" "CANCELLED(c@)"))
