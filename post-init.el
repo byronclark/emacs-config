@@ -614,7 +614,7 @@
   :mode ("\\.org\\'" . org-mode)
   :bind (("C-c a" . org-agenda)
          ("C-c b" . org-switchb)
-         ("C-c l" . org-switch-link)
+         ("C-c l" . org-store-link)
          ("C-c c" . org-capture))
   :hook (org-mode . (lambda ()
                       (auto-fill-mode -1)))
@@ -661,6 +661,10 @@
    org-todo-keywords '((sequence "TODO(t)" "WAITING(w@/!)" "|" "DONE(d!)" "CANCELLED(c@)"))
 
    org-agenda-window-setup 'current-window)
+
+  ;; Add rather than set to allow contributions from ~/.emacs.local
+  (add-to-list 'org-link-abbrev-alist '("github" . "https://github.com/%s"))
+
   (require 'org-habit))
 
 (use-package verb
