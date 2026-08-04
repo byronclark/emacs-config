@@ -838,6 +838,7 @@
   (agent-shell-prefer-viewport-interaction t)
   (agent-shell-context-sources '(files region error))
   (agent-shell-busy-indicator-frames 'dots-block)
+  (agent-shell-activity-group-expand-by-default 'latest)
 
   (agent-shell-session-strategy 'prompt)
   (agent-shell-session-choices-function
