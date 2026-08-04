@@ -827,6 +827,10 @@
                                  google/gemini-flash-latest
                                  openai/gpt-chat-latest))))
 
+;; agent-shell and its dependencies have regular stable releases
+(dolist (pkg '(acp shell-maker agent-shell))
+  (add-to-list 'package-pinned-packages (cons pkg "melpa-stable")))
+
 (use-package agent-shell
   :ensure t
   :after auth-source
