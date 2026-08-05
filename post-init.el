@@ -560,6 +560,7 @@
 ;; *** Content ***
 (use-package elfeed
   :ensure t
+  :pin melpa-stable
   :init
   (setq-default elfeed-search-filter "@2-months-ago +unread ")
   (setopt elfeed-sort-order 'ascending)
