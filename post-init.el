@@ -1029,18 +1029,6 @@
   (cider-eldoc-display-for-symbol-at-point nil)
   (cider-enable-nrepl-jvmti-agent t)
   (cider-nbb-command "npx nbb") ;Prefer project version of nbb.
-  :config
-  ;; cider portal integration (see https://cljdoc.org/d/djblue/portal/0.58.5/doc/editors/emacs)
-  (defun portal.api/open ()
-    (interactive)
-    (cider-nrepl-sync-request:eval
-     "(do (ns dev) (def portal ((requiring-resolve 'portal.api/open) {:launcher :emacs})) (add-tap (requiring-resolve 'portal.api/submit)))"))
-  (defun portal.api/clear ()
-    (interactive)
-    (cider-nrepl-sync-request:eval "(portal.api/clear)"))
-  (defun portal.api/close ()
-    (interactive)
-    (cider-nrepl-sync-request:eval "(portal.api/close)"))
   :hook ((cider-repl-mode . smartparens-strict-mode)
          (cider-repl-mode . subword-mode)
          (cider-mode . (lambda ()
