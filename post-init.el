@@ -35,6 +35,14 @@
 
 (defvar byronc/emacs-local-init-dir (expand-file-name "init" byronc/emacs-local-dir))
 
+(defvar byronc/browse-url-default-browser-domains
+  '("github\\.com"
+    "gitlab\\.com"
+    "melpa.org"
+    "youtube.com"
+    "google.com")
+  "Regexps of domains to open in the system browser instead of eww. Defined early so local init files can add to the list.")
+
 (use-package epa-file
   :ensure nil
   :custom
@@ -603,8 +611,8 @@
       (pdf-view-mode)))
   :config
   (setq browse-url-handlers
-        '(("\\.pdf$" . byronc/browse-url-pdf)
-          ("github\\.com\\|gitlab\\.com\\|melpa.org\\|youtube.com\\|google.com\\|app.superthread.com" . browse-url-default-browser)
+        `(("\\.pdf$" . byronc/browse-url-pdf)
+          (,(mapconcat #'identity byronc/browse-url-default-browser-domains "\\|") . browse-url-default-browser)
           ("." . eww-browse-url)))
   (setq browse-url-secondary-browser-function 'browse-url-default-browser))
 
