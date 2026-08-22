@@ -388,28 +388,8 @@
 
 (use-package casual
   :ensure t
-  :pin melpa-stable)
-
-(use-package casual-dired
-  :ensure nil
-  :after dired
-  :bind (:map dired-mode-map
-         ("C-o" . casual-dired-tmenu)
-         ("s" . casual-dired-sort-by-tmenu)))
-
-(use-package casual-agenda
-  :ensure nil
-  :after org-agenda
-  :bind (:map org-agenda-mode-map
-         ("C-o" . casual-agenda-tmenu)))
-
-(use-package casual-calc
-  :ensure nil
-  :after calc
-  :bind (:map calc-mode-map
-         ("C-o" . casual-calc-tmenu)
-         :map calc-alg-map
-         ("C-o" . casual-calc-tmenu)))
+  :pin melpa-stable
+  :hook (after-init . casual-init))
 
 ;; **** vertico stack ****
 (use-package vertico
