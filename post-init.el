@@ -856,7 +856,8 @@
                  choices)))
   (agent-shell-agent-configs (list (agent-shell-anthropic-make-claude-code-config)
                                    (agent-shell-openai-make-codex-config)
-                                   (agent-shell-opencode-make-agent-config)))
+                                   (agent-shell-opencode-make-agent-config)
+                                   (agent-shell-pi-make-agent-config)))
   (agent-shell-preferred-agent-config '(preselect . claude-code))
 
   ;; Configure global mcp servers in ~/.emacs.local.
