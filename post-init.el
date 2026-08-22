@@ -230,6 +230,15 @@
   :custom
   (aw-scope 'frame))
 
+(use-package anzu
+  :ensure t
+  :pin melpa-stable
+  :bind
+  (([remap query-replace] . anzu-query-replace)
+   ([remap query-replace-regexp] . anzu-query-replace-regexp))
+  :config
+  (global-anzu-mode +1))
+
 (use-package expand-region
   :ensure t
   :bind ("C-=" . er/expand-region))
@@ -1093,8 +1102,6 @@
   (text-mode . visual-wrap-prefix-mode)
   (after-save . executable-make-buffer-file-executable-if-script-p)
   :custom
-  (isearch-lazy-count t)
-  (lazy-count-prefix-format "(%s/%s) ")
   (window-combination-resize t)
   (set-mark-command-repeat-pop t)
   :config
