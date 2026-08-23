@@ -249,22 +249,20 @@ Functions run after agent-shell and its agent integrations have loaded.")
   :bind ("C-=" . er/expand-region))
 
 (use-package yasnippet-snippets
-  :after yasnippet
   :ensure t)
 
 (use-package yasnippet
   :ensure t
-  :commands (yas-minor-mode
-             yas-global-mode)
-  :hook
-  (after-init . yas-global-mode)
+  :after yasnippet-snippets
   :custom
   (yas-also-auto-indent-first-line t)  ; Indent first line of snippet
   (yas-also-indent-empty-lines t)
   (yas-snippet-revival nil)  ; Setting this to t causes issues with undo
   (yas-wrap-around-region nil) ; Do not wrap region when expanding snippets
+  (yas-indent-line 'fixed)
   :init
-  (setq yas-verbosity 0))
+  (setq yas-verbosity 0)
+  (yas-global-mode 1))
 
 (use-package jinx
   :ensure t
@@ -324,21 +322,17 @@ Functions run after agent-shell and its agent integrations have loaded.")
 ;; **** History ****
 (use-package autorevert
   :ensure nil
-  :commands (auto-revert-mode global-auto-revert-mode)
-  :hook
-  (after-init . global-auto-revert-mode)
   :custom
   (auto-revert-interval 3)
   (auto-revert-remote-files nil)
   (auto-revert-use-notify t)
   (auto-revert-avoid-polling nil)
-  (auto-revert-verbose t))
+  (auto-revert-verbose t)
+  :init
+  (global-auto-revert-mode 1))
 
 (use-package recentf
   :ensure nil
-  :commands (recentf-mode recentf-cleanup)
-  :hook
-  (after-init . recentf-mode)
   :custom
   (recentf-auto-cleanup (if (daemonp) 300 'never))
   (recentf-exclude
@@ -354,24 +348,24 @@ Functions run after agent-shell and its agent integrations have loaded.")
   ;; `recentf-save-list', allowing stale entries to be removed before the list
   ;; is saved by `recentf-save-list', which is automatically added to
   ;; `kill-emacs-hook' by `recentf-mode'.
-  (add-hook 'kill-emacs-hook #'recentf-cleanup -90))
+  (add-hook 'kill-emacs-hook #'recentf-cleanup -90)
+  :init
+  (recentf-mode 1))
 
 (use-package savehist
   :ensure nil
-  :commands (savehist-mode savehist-save)
-  :hook
-  (after-init . savehist-mode)
   :custom
   (history-length 300)
-  (savehist-autosave-interval 600))
+  (savehist-autosave-interval 600)
+  :init
+  (savehist-mode 1))
 
 (use-package saveplace
   :ensure nil
-  :commands (save-place-mode save-place-local-mode)
-  :hook
-  (after-init . save-place-mode)
   :custom
-  (save-place-limit 400))
+  (save-place-limit 400)
+  :init
+  (save-place-mode 1))
 
 ;; **** Window Management ****
 (require 'windmove)
@@ -408,29 +402,26 @@ Functions run after agent-shell and its agent integrations have loaded.")
 ;; **** vertico stack ****
 (use-package vertico
   :ensure t
-  :config
-  (vertico-mode))
+  :init
+  (vertico-mode 1))
 
 (use-package orderless
   :ensure t
   :custom
-  (completion-styles '(orderless partial-completion basic))
-  (completion-category-defaults nil)
-  (completion-category-overrides nil))
+  (completion-styles '(orderless basic))
+  (completion-category-overrides '((file (styles partial-completion))))
+  ;; Emacs 31: partial-completion behaves like substring
+  (completion-pcm-leading-wildcard t))
 
 (use-package marginalia
   :ensure t
-  :commands (marginalia-mode marginalia-cycle)
-  :hook (after-init . marginalia-mode))
+  :bind (:map minibuffer-local-map
+         ("M-A" . marginalia-cycle))
+  :init
+  (marginalia-mode 1))
 
 (use-package embark
   :ensure t
-  :commands (embark-act
-             embark-dwim
-             embark-export
-             embark-collect
-             embark-bindings
-             embark-prefix-help-command)
   :bind
   (("C-." . embark-act)         ;; pick some comfortable binding
    ("C-;" . embark-dwim)        ;; good alternative: M-.
@@ -449,9 +440,7 @@ Functions run after agent-shell and its agent integrations have loaded.")
   :ensure t)
 
 (use-package embark-consult
-  :ensure t
-  :hook
-  (embark-collect-mode . consult-preview-at-point-mode))
+  :ensure t)
 
 (use-package consult
   :ensure t
@@ -516,8 +505,7 @@ Functions run after agent-shell and its agent integrations have loaded.")
   :hook (completion-list-mode . consult-preview-at-point-mode)
 
   :init
-  (setq register-preview-delay 0.5
-        register-preview-function #'consult-register-format)
+  (setq register-preview-delay 0.5)
   (advice-add #'register-preview :override #'consult-register-window)
   (setq xref-show-xrefs-function #'consult-xref
         xref-show-definitions-function #'consult-xref)
@@ -535,20 +523,13 @@ Functions run after agent-shell and its agent integrations have loaded.")
 ;; **** Completions ****
 (use-package corfu
   :ensure t
-  :commands (corfu-mode global-corfu-mode)
-
-  :hook ((prog-mode . corfu-mode)
-         (shell-mode . corfu-mode)
-         (eshell-mode . corfu-mode)
-         (agent-shell-mode . corfu-mode))
-
   :custom
   (read-extended-command-predicate #'command-completion-default-include-p)
   (text-mode-ispell-word-completion nil)
   (tab-always-indent 'complete)
 
-  :config
-  (global-corfu-mode))
+  :init
+  (global-corfu-mode 1))
 
 (use-package cape
   :ensure t
@@ -1123,7 +1104,12 @@ Functions run after agent-shell and its agent integrations have loaded.")
 
 (use-package server
   :ensure nil
-  :commands server-start
-  :hook (after-init . server-start))
+  :if (not (daemonp))
+  :preface
+  (defun byronc/server-start ()
+    (unless (server-running-p)
+      (server-start)))
+  :init
+  (add-hook 'emacs-startup-hook #'byronc/server-start))
 
 ;;; post-init.el ends here
