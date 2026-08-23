@@ -35,6 +35,11 @@
 
 (defvar byronc/emacs-local-init-dir (expand-file-name "init" byronc/emacs-local-dir))
 
+(defvar byronc/agent-shell-configure-hook nil
+  "Hook for machine-local agent-shell configuration.
+
+Functions run after agent-shell and its agent integrations have loaded.")
+
 (defvar byronc/browse-url-default-browser-domains
   '("github\\.com"
     "gitlab\\.com"
@@ -844,17 +849,13 @@
                    (eq (cdr choice) :downloads-shell))
                  choices)))
   (agent-shell-agent-configs (list (agent-shell-anthropic-make-claude-code-config)
-                                   (agent-shell-openai-make-codex-config)
                                    (agent-shell-opencode-make-agent-config)
                                    (agent-shell-pi-make-agent-config)))
   (agent-shell-preferred-agent-config '(preselect . claude-code))
 
-  ;; Configure global mcp servers in ~/.emacs.local.
   ;; Claude Code
   (agent-shell-anthropic-authentication (agent-shell-anthropic-make-authentication :login t))
   (agent-shell-anthropic-default-session-mode-id "auto")
-  ;; Codex
-  (agent-shell-openai-authentication (agent-shell-openai-make-authentication :api-key (lambda () (auth-source-pick-first-password :host "codex.openai"))))
   :config
   (setq agent-shell-activity-group-header-label-function #'agent-shell-activity-group-tally-label)
   (setq agent-shell-anthropic-claude-environment
@@ -863,6 +864,7 @@
          ;; Artificially limit the window until we have a better option.
          "CLAUDE_CODE_AUTO_COMPACT_WINDOW" "400000"
          :inherit-env t))
+  (run-hooks 'byronc/agent-shell-configure-hook)
   :commands (agent-shell))
 
 ;; **** Source Control ****
