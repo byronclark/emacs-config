@@ -596,6 +596,18 @@ Functions run after agent-shell and its agent integrations have loaded.")
   :ensure t
   :demand t
   :mode ("\\.org\\'" . org-mode)
+  :preface
+  (defun byronc/org-capture-web-link-template ()
+    "Build a capture entry from the last stored link. Currently handles:
+- elfeed (use external-link)
+- eww (or any other generic entry with a :link)"
+    (let* ((type  (plist-get org-store-link-plist :type))
+           (title (or (plist-get org-store-link-plist :description) "%^{Title}"))
+           (url   (pcase type
+                    ("elfeed" (plist-get org-store-link-plist :external-link))
+                    (_        (plist-get org-store-link-plist :link)))))
+      (format "* %s\n%s\n%%U\n%%?" title url)))
+
   :bind (("C-c a" . org-agenda)
          ("C-c b" . org-switchb)
          ("C-c l" . org-store-link)
@@ -640,7 +652,10 @@ Functions run after agent-shell and its agent integrations have loaded.")
                             "* TODO %i%?")
                            ("T" "Tickler" entry
                             (file "tickler.org")
-                            "* %i%? \n %U"))
+                            "* %i%? \n %U")
+                           ("r" "Read later" entry
+                            (file "inbox.org")
+                            (function byronc/org-capture-web-link-template)))
 
    org-todo-keywords '((sequence "TODO(t)" "WAITING(w@/!)" "|" "DONE(d!)" "CANCELLED(c@)"))
 
