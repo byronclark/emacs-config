@@ -894,6 +894,25 @@ Skipped prompts drop their line rather than leaving it empty."
          ;; Artificially limit the window until we have a better option.
          "CLAUDE_CODE_AUTO_COMPACT_WINDOW" "400000"
          :inherit-env t))
+
+  ;; The header SVG is already sized in pixels, but `create-image' scales
+  ;; it again, resulting in text that's ~10% larger than my font.
+  ;;
+  ;; We can drop this if agent-shell starts passing :scale when creating the
+  ;; header SVG.
+  (defun byronc/agent-shell-unscale-header (header)
+    "Render the SVG image in HEADER at its intrinsic pixel size."
+    (when-let* (((stringp header))
+                (pos (text-property-not-all 0 (length header) 'display nil header))
+                (image (get-text-property pos 'display header))
+                ((imagep image)))
+      (setf (image-property image :scale) 1))
+    header)
+  (unless (fboundp 'agent-shell--render-header-model-uncached)
+    (warn "agent-shell header advice is stale"))
+  (advice-add 'agent-shell--render-header-model-uncached :filter-return
+              #'byronc/agent-shell-unscale-header)
+
   (run-hooks 'byronc/agent-shell-configure-hook)
   :commands (agent-shell))
 
