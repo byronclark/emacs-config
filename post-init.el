@@ -4,7 +4,6 @@
   :demand t
   :ensure t
   :config
-  (setq package-native-compile nil)
   (setq compile-angel-verbose t)
 
   (push "/init.el" compile-angel-excluded-files)
