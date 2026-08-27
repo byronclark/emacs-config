@@ -586,8 +586,11 @@ Functions run after agent-shell and its agent integrations have loaded.")
   :config
   (setq browse-url-handlers
         `(("\\.pdf$" . byronc/browse-url-pdf)
-          (,(mapconcat #'identity byronc/browse-url-default-browser-domains "\\|") . browse-url-default-browser)
-          ("." . eww-browse-url)))
+          (,(mapconcat #'identity byronc/browse-url-default-browser-domains "\\|") . browse-url-default-browser)))
+  ;; Starting Emacs 31, `eww-browse-with-external-browser' routes through
+  ;; `browse-url' which means a catch-all in `browse-url-handlers' keeps the
+  ;; secondary browser function from being called.
+  (setq browse-url-browser-function 'eww-browse-url)
   (setq browse-url-secondary-browser-function 'browse-url-default-browser))
 
 ;; **** Information Management ****
