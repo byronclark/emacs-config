@@ -1,0 +1,54 @@
+#+title: Capturing browser links with org-protocol
+
+Per-machine setup that can't live in this repo. The Emacs half is already in
+=post-init.el= (=org-protocol= plus =byronc/org-capture-web-link-template=).
+
+Emacs has to be running, or clicking the bookmarklet does nothing and says
+nothing.
+
+* Linux
+
+=~/.local/share/applications/org-protocol.desktop=:
+
+#+begin_src conf
+[Desktop Entry]
+Name=Org Protocol
+Comment=Handle org-protocol:// links from web browsers
+Exec=emacsclient %u
+Type=Application
+NoDisplay=true
+MimeType=x-scheme-handler/org-protocol;
+#+end_src
+
+#+begin_src sh
+update-desktop-database ~/.local/share/applications
+xdg-mime default org-protocol.desktop x-scheme-handler/org-protocol
+xdg-mime query default x-scheme-handler/org-protocol   # => org-protocol.desktop
+#+end_src
+
+* macOS
+
+Registration is in the app bundle, and most builds ship it. Check:
+
+#+begin_src sh
+plutil -p /Applications/Emacs.app/Contents/Info.plist | grep -B2 -A6 org-protocol
+#+end_src
+
+If =org-protocol= is under =CFBundleURLSchemes=, there's nothing to do.
+
+* Firefox
+
+Bookmark this on the toolbar as "Read later":
+
+#+begin_src js
+javascript:(function(){var u='org-protocol://capture?'+new URLSearchParams({template:'r',url:location.href,title:document.title,body:String(window.getSelection())});var a=document.createElement('a');a.href=u;a.style.display='none';document.body.appendChild(a);a.click();setTimeout(function(){document.body.removeChild(a);},100);})();
+#+end_src
+
+Selected text rides along as =body= and lands via =%i=.
+
+To stop Firefox asking on every new site, set this boolean in =about:config=
+(create it if missing):
+
+#+begin_src conf
+network.protocol-handler.warn-external.org-protocol = false
+#+end_src

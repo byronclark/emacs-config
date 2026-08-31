@@ -602,13 +602,16 @@ Functions run after agent-shell and its agent integrations have loaded.")
   (defun byronc/org-capture-web-link-template ()
     "Build a capture entry from the last stored link. Currently handles:
 - elfeed (use external-link)
-- eww (or any other generic entry with a :link)"
+- eww, org-protocol (or any other generic entry with a :link)"
     (let* ((type  (plist-get org-store-link-plist :type))
-           (title (or (plist-get org-store-link-plist :description) "%^{Title}"))
-           (url   (pcase type
-                    ("elfeed" (plist-get org-store-link-plist :external-link))
-                    (_        (plist-get org-store-link-plist :link)))))
-      (format "* %s\n%s\n%%U\n%%?" title url)))
+           (desc  (plist-get org-store-link-plist :description))
+           ;; Escape % in page-supplied text so it isn't expanded as a capture escape.
+           (title (if desc (string-replace "%" "%%" desc) "%^{Title}"))
+           (url   (string-replace "%" "%%"
+                                  (pcase type
+                                    ("elfeed" (plist-get org-store-link-plist :external-link))
+                                    (_        (plist-get org-store-link-plist :link))))))
+      (format "* %s\n%s\n%%U\n%%i%%?" title url)))
 
   :bind (("C-c a" . org-agenda)
          ("C-c b" . org-switchb)
@@ -666,7 +669,8 @@ Functions run after agent-shell and its agent integrations have loaded.")
   ;; Add rather than set to allow contributions from ~/.emacs.local
   (add-to-list 'org-link-abbrev-alist '("github" . "https://github.com/%s"))
 
-  (require 'org-habit))
+  (require 'org-habit)
+  (require 'org-protocol))
 
 (use-package verb
   :ensure t
