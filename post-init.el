@@ -600,9 +600,9 @@ Functions run after agent-shell and its agent integrations have loaded.")
   :mode ("\\.org\\'" . org-mode)
   :preface
   (defun byronc/org-capture-web-link-template ()
-    "Build a capture entry from the last stored link. Currently handles:
-- elfeed (use external-link)
-- eww, org-protocol (or any other generic entry with a :link)"
+    "Build a capture entry from the last stored link.
+Elfeed stores the article URL in :external-link; eww, org-protocol,
+and anything else use :link."
     (let* ((type  (plist-get org-store-link-plist :type))
            (desc  (plist-get org-store-link-plist :description))
            ;; Escape % in page-supplied text so it isn't expanded as a capture escape.
@@ -688,10 +688,9 @@ Functions run after agent-shell and its agent integrations have loaded.")
              org-roam-node-search)
   :preface
   (defun byronc/org-roam-node-link (node)
-    "Return an Org link to NODE.
-Uses an id: link when NODE already exists, and a roam: link otherwise;
-org-roam rewrites roam: links to id: links on save once the node does
-exist.  Returns the empty string for an empty title."
+    "Return an Org link to NODE, or the empty string if it has no title.
+A node that does not exist yet gets a roam: link, which org-roam
+rewrites to an id: link on save."
     (let ((title (org-roam-node-title node)))
       (cond ((string= title "") "")
             ((org-roam-node-id node)
@@ -702,27 +701,45 @@ exist.  Returns the empty string for an empty title."
     "Read a node with PROMPT and return an Org link to it."
     (byronc/org-roam-node-link (org-roam-node-read nil nil nil nil prompt)))
 
+  (defun byronc/org-roam-read-links (prompt)
+    "Read nodes with PROMPT until an empty answer, returning a list of links."
+    (let (links link)
+      (while (not (string= "" (setq link (byronc/org-roam-read-link prompt))))
+        (push link links))
+      (nreverse links)))
+
+  (defun byronc/org-roam-field (key value)
+    (unless (string= value "") (concat "- " key " :: " value "\n")))
+
   (defun byronc/org-roam-title-link (title)
-    "Return an Org link to the node named TITLE.
-Looked up by title so the id stays out of this file and each machine
-resolves to its own node."
+    "Return an Org link to the node named TITLE."
     (byronc/org-roam-node-link
      (or (org-roam-node-from-title-or-alias title)
          (org-roam-node-create :title title))))
 
   (defun byronc/org-roam-book-template ()
-    "Body for the book note capture template.
-Skipped prompts drop their line rather than leaving it empty."
-    (let ((genre (byronc/org-roam-read-link "Genre (RET to skip): "))
+    "Body for the book note capture template."
+    (let ((genres (byronc/org-roam-read-links "Genre (RET to finish): "))
           (author (byronc/org-roam-read-link "Author: "))
           (series (byronc/org-roam-read-link "Series (RET to skip): ")))
       (concat "\n- tags :: "
-              (mapconcat #'identity
-                         (delete "" (list (byronc/org-roam-title-link "Book") genre))
-                         ", ")
+              (string-join (cons (byronc/org-roam-title-link "Book") genres) ", ")
               "\n"
-              (unless (string= author "") (concat "- author :: " author "\n"))
-              (unless (string= series "") (concat "- series :: " series "\n"))
+              (byronc/org-roam-field "author" author)
+              (byronc/org-roam-field "series" series)
+              "- read :: [%<%Y-%m-%d %a>]\n"
+              "\n* Summary\n\n%?")))
+
+  (defun byronc/org-roam-article-template ()
+    "Body for the article note capture template."
+    (let ((topics (byronc/org-roam-read-links "Topic (RET to finish): "))
+          (author (byronc/org-roam-read-link "Author: "))
+          (source (read-string "Source (RET to skip): ")))
+      (concat "\n- tags :: "
+              (string-join (cons (byronc/org-roam-title-link "Article") topics) ", ")
+              "\n"
+              (byronc/org-roam-field "author" author)
+              (byronc/org-roam-field "source" source)
               "- read :: [%<%Y-%m-%d %a>]\n"
               "\n* Summary\n\n%?")))
 
@@ -730,6 +747,7 @@ Skipped prompts drop their line rather than leaving it empty."
     "Go to today's daily note without prompting for a template."
     (interactive)
     (org-roam-dailies-goto-today "d"))
+
   :bind (("C-c n j" . org-roam-dailies-capture-today)
          ("C-c n d" . byronc/org-roam-dailies-goto-today)
          :map org-mode-map
@@ -738,6 +756,7 @@ Skipped prompts drop their line rather than leaving it empty."
          ("C-c n a" . org-roam-alias-add)
          ("C-c n l" . org-roam-buffer-toggle)
          ("C-c n r" . org-roam-refile))
+
   :config
   (setq
    org-roam-directory "~/org/notes"
@@ -747,6 +766,11 @@ Skipped prompts drop their line rather than leaving it empty."
                                  :unnarrowed t)
                                 ("b" "book notes" plain
                                  (function byronc/org-roam-book-template)
+                                 :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}
+")
+                                 :unnarrowed t)
+                                ("a" "article" plain
+                                 (function byronc/org-roam-article-template)
                                  :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}
 ")
                                  :unnarrowed t))
