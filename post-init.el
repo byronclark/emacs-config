@@ -594,6 +594,10 @@ Functions run after agent-shell and its agent integrations have loaded.")
   (setq browse-url-secondary-browser-function 'browse-url-default-browser))
 
 ;; **** Information Management ****
+(use-package calendar
+  :custom
+  (calendar-week-start-day 1))
+
 (use-package org
   :ensure t
   :demand t
@@ -642,6 +646,7 @@ and anything else use :link."
    ;; Agenda styling
    org-agenda-tags-column 0
    org-agenda-block-separator ?─
+   org-agenda-start-on-weekday 1
 
    ;; And everything else...
    org-directory "~/org"
