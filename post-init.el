@@ -3,6 +3,7 @@
 (use-package compile-angel
   :demand t
   :ensure t
+  :pin melpa-stable
   :config
   (setq compile-angel-verbose t)
 
