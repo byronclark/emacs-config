@@ -42,9 +42,9 @@ Functions run after agent-shell and its agent integrations have loaded.")
 (defvar byronc/browse-url-default-browser-domains
   '("github\\.com"
     "gitlab\\.com"
-    "melpa.org"
-    "youtube.com"
-    "google.com")
+    "melpa\\.org"
+    "youtube\\.com" "youtu\\.be"
+    "google\\.com")
   "Regexps of domains to open in the system browser instead of eww. Defined early so local init files can add to the list.")
 
 (use-package epa-file
