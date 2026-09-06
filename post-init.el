@@ -2,7 +2,6 @@
 
 (use-package compile-angel
   :demand t
-  :ensure t
   :pin melpa-stable
   :config
   (setq compile-angel-verbose t)
@@ -17,7 +16,6 @@
   (compile-angel-on-load-mode 1))
 
 (use-package exec-path-from-shell
-  :ensure t
   :if (or (display-graphic-p) (daemonp))
   :demand t
   :functions exec-path-from-shell-initialize
@@ -27,8 +25,7 @@
   (exec-path-from-shell-initialize))
 
 ;; *** Allow use-package to install system packages ***
-(use-package system-packages
-  :ensure t)
+(use-package system-packages)
 
 (use-package use-package-ensure-system-package
   :ensure nil)
@@ -65,13 +62,11 @@ Functions run after agent-shell and its agent integrations have loaded.")
 
 ;; *** Newer versions of built-in packages ***
 (use-package transient
-  :ensure t
   :pin melpa-stable
   :demand t)
 
 ;; *** Appearance ***
 (use-package modus-themes
-  :ensure t
   :custom
   (modus-themes-headings '((1 . (semibold 1.5))
                            (2 . (semibold 1.3))
@@ -83,18 +78,15 @@ Functions run after agent-shell and its agent integrations have loaded.")
   (modus-themes-include-derivatives-mode))
 
 (use-package ef-themes
-  :ensure t
   :custom
   (modus-themes-to-toggle '(ef-frost ef-owl))
   :config
   ;; (modus-themes-select 'ef-owl)
   )
 
-(use-package batppuccin
-  :ensure t)
+(use-package batppuccin)
 
 (use-package auto-dark
-  :ensure t
   :custom
   (custom-safe-themes t)
   (auto-dark-themes '((batppuccin-macchiato) (batppuccin-latte)))
@@ -102,7 +94,6 @@ Functions run after agent-shell and its agent integrations have loaded.")
   (auto-dark-mode))
 
 (use-package spacious-padding
-  :ensure t
   :if (display-graphic-p)
   :custom
   ;; (spacious-padding-subtle-frame-lines t)
@@ -117,7 +108,6 @@ Functions run after agent-shell and its agent integrations have loaded.")
   (spacious-padding-mode 1))
 
 (use-package fontaine
-  :ensure t
   :if (display-graphic-p)
   :init
   (setopt fontaine-presets
@@ -182,12 +172,10 @@ Functions run after agent-shell and its agent integrations have loaded.")
   (fontaine-mode 1))
 
 (use-package mood-line
-  :ensure t
-  :config
+  :init
   (mood-line-mode))
 
 (use-package pulsar
-  :ensure t
   :bind (:map global-map
               ("C-x l" . pulsar-pulse-line))
   :init
@@ -199,22 +187,16 @@ Functions run after agent-shell and its agent integrations have loaded.")
   :init
   (global-hl-line-mode 1))
 
-(setq-default truncate-lines nil)
-
 ;; *** Behavior ***
-(setopt scroll-margin 10)
 (use-package easy-kill
-  :ensure t
   :bind (([remap kill-ring-save] . easy-kill)
          ([remap mark-sexp] . easy-mark)))
 
 (use-package zop-to-char
-  :ensure t
   :bind ([remap zap-to-char] . zop-up-to-char))
 
 (use-package crux
-  :ensure t
-  :defer t
+  :commands (crux-kill-buffer-truename)
   :bind (("C-M-z" . crux-indent-defun)
          ("C-^" . crux-top-join-line)
          ("C-c d" . crux-duplicate-current-line-or-region)
@@ -222,21 +204,17 @@ Functions run after agent-shell and its agent integrations have loaded.")
          ([remap keyboard-quit] . crux-keyboard-quit-dwim)))
 
 (use-package avy
-  :ensure t
-  :defer t
   :config
   (setq avy-background t)
   :bind (("s-," . avy-goto-char-timer)
          ("M-g l" . avy-goto-line)))
 
 (use-package ace-window
-  :ensure t
   :bind ([remap other-window] . ace-window)
   :custom
   (aw-scope 'frame))
 
 (use-package anzu
-  :ensure t
   :pin melpa-stable
   :bind
   (([remap query-replace] . anzu-query-replace)
@@ -245,14 +223,11 @@ Functions run after agent-shell and its agent integrations have loaded.")
   (global-anzu-mode +1))
 
 (use-package expand-region
-  :ensure t
   :bind ("C-=" . er/expand-region))
 
-(use-package yasnippet-snippets
-  :ensure t)
+(use-package yasnippet-snippets)
 
 (use-package yasnippet
-  :ensure t
   :after yasnippet-snippets
   :custom
   (yas-also-auto-indent-first-line t)  ; Indent first line of snippet
@@ -265,16 +240,12 @@ Functions run after agent-shell and its agent integrations have loaded.")
   (yas-global-mode 1))
 
 (use-package jinx
-  :ensure t
   :hook
   (emacs-startup . global-jinx-mode)
   :bind (("M-$" . jinx-correct)
          ("C-M-$" . jinx-languages)))
 
-(global-set-key (kbd "C-c *") 'isearch-forward-thing-at-point)
-
 (use-package super-save
-  :ensure t
   :custom
   (super-save-auto-save-when-idle t)
   (super-save-idle-duration 60)
@@ -285,15 +256,13 @@ Functions run after agent-shell and its agent integrations have loaded.")
   ;; - hexl-mode: saves the hexl format of the file
   (add-to-list 'super-save-predicates (lambda ()
                                         (not (memq major-mode '(org-mode hexl-mode)))))
-  :hook (after-init . super-save-mode))
+  :hook (emacs-startup . super-save-mode))
 
 ;; **** Miscellaneous ****
-(setq warning-minimum-level :error)
-
 (use-package which-key
-  :ensure t
+  :ensure nil
   :commands which-key-mode
-  :hook (after-init . which-key-mode)
+  :hook (emacs-startup . which-key-mode)
   :custom
   (which-key-idle-delay 1.5)
   (which-key-idle-secondary-delay 0.25)
@@ -302,15 +271,7 @@ Functions run after agent-shell and its agent integrations have loaded.")
 
 (use-package editorconfig
   :ensure nil
-  :config
-  (editorconfig-mode 1))
-
-(add-hook 'after-init-hook #'show-paren-mode)
-(add-hook 'after-init-hook #'winner-mode)
-(delete-selection-mode 1)
-(setq save-interprogram-paste-before-kill t)
-
-(setq confirm-kill-emacs 'y-or-n-p)
+  :hook (after-init . editorconfig-mode))
 
 (use-package uniquify
   :ensure nil
@@ -328,8 +289,8 @@ Functions run after agent-shell and its agent integrations have loaded.")
   (auto-revert-use-notify t)
   (auto-revert-avoid-polling nil)
   (auto-revert-verbose t)
-  :init
-  (global-auto-revert-mode 1))
+  :hook
+  (emacs-startup . global-auto-revert-mode))
 
 (use-package recentf
   :ensure nil
@@ -368,12 +329,12 @@ Functions run after agent-shell and its agent integrations have loaded.")
   (save-place-mode 1))
 
 ;; **** Window Management ****
-(require 'windmove)
-(windmove-default-keybindings)
+(use-package windmove
+  :ensure nil
+  :init
+  (windmove-default-keybindings))
 
 (use-package perspective
-  :ensure t
-  :demand t
   :after consult
   :custom
   (persp-mode-prefix-key (kbd "C-x x"))
@@ -390,23 +351,19 @@ Functions run after agent-shell and its agent integrations have loaded.")
   (dired-mode . dired-hide-details-mode))
 
 (use-package dired-preview
-  :ensure t
   :hook
   (dired-mode . dired-preview-mode))
 
 (use-package casual
-  :ensure t
   :pin melpa-stable
   :hook (after-init . casual-init))
 
 ;; **** vertico stack ****
 (use-package vertico
-  :ensure t
   :init
   (vertico-mode 1))
 
 (use-package orderless
-  :ensure t
   :custom
   (completion-styles '(orderless basic))
   (completion-category-overrides '((file (styles partial-completion))))
@@ -414,14 +371,12 @@ Functions run after agent-shell and its agent integrations have loaded.")
   (completion-pcm-leading-wildcard t))
 
 (use-package marginalia
-  :ensure t
   :bind (:map minibuffer-local-map
          ("M-A" . marginalia-cycle))
   :init
   (marginalia-mode 1))
 
 (use-package embark
-  :ensure t
   :bind
   (("C-." . embark-act)         ;; pick some comfortable binding
    ("C-;" . embark-dwim)        ;; good alternative: M-.
@@ -436,14 +391,12 @@ Functions run after agent-shell and its agent integrations have loaded.")
                  nil
                  (window-parameters (mode-line-format . none)))))
 
-(use-package wgrep
-  :ensure t)
+(use-package wgrep)
 
 (use-package embark-consult
-  :ensure t)
+  :after (embark consult))
 
 (use-package consult
-  :ensure t
   :demand t
   :bind (;; C-c bindings in `mode-specific-map'
          ("C-c M-x" . consult-mode-command)
@@ -522,7 +475,6 @@ Functions run after agent-shell and its agent integrations have loaded.")
 
 ;; **** Completions ****
 (use-package corfu
-  :ensure t
   :custom
   (read-extended-command-predicate #'command-completion-default-include-p)
   (text-mode-ispell-word-completion nil)
@@ -532,7 +484,6 @@ Functions run after agent-shell and its agent integrations have loaded.")
   (global-corfu-mode 1))
 
 (use-package cape
-  :ensure t
   :commands (cape-dabbrev cape-file cape-elisp-block)
   :bind ("C-c p" . cape-prefix-map)
   :init
@@ -542,7 +493,6 @@ Functions run after agent-shell and its agent integrations have loaded.")
 
 ;; *** Content ***
 (use-package elfeed
-  :ensure t
   :pin melpa-stable
   :init
   (setq-default elfeed-search-filter "@2-months-ago +unread ")
@@ -552,7 +502,6 @@ Functions run after agent-shell and its agent integrations have loaded.")
   :bind ("C-x w" . elfeed))
 
 (use-package elfeed-tube
-  :ensure t
   :after elfeed
   :demand t
   :config
@@ -566,7 +515,6 @@ Functions run after agent-shell and its agent integrations have loaded.")
 
 (use-package shr
   :ensure nil
-  :demand t
   :config
   (setq shr-width nil
         shr-max-width 100
@@ -577,7 +525,6 @@ Functions run after agent-shell and its agent integrations have loaded.")
 
 (use-package eww
   :ensure nil
-  :demand t
   :init
   (defun byronc/browse-url-pdf (url &rest _args)
     (let ((tmp (make-temp-file "emacs-pdf-" nil ".pdf")))
@@ -596,11 +543,11 @@ Functions run after agent-shell and its agent integrations have loaded.")
 
 ;; **** Information Management ****
 (use-package calendar
+  :ensure nil
   :custom
   (calendar-week-start-day 1))
 
 (use-package org
-  :ensure t
   :demand t
   :mode ("\\.org\\'" . org-mode)
   :preface
@@ -679,7 +626,6 @@ and anything else use :link."
   (require 'org-protocol))
 
 (use-package verb
-  :ensure t
   :pin melpa-stable
   :after org
   :custom
@@ -688,7 +634,6 @@ and anything else use :link."
   (define-key org-mode-map (kbd "C-c C-r") verb-command-map))
 
 (use-package org-roam
-  :ensure t
   :after org
   :commands (org-roam-node-find
              org-roam-node-search)
@@ -794,7 +739,6 @@ rewrites to an id: link on save."
   (org-roam-db-autosync-enable))
 
 (use-package consult-org-roam
-  :ensure t
   :after consult
   :bind (("C-c n f" . consult-org-roam-file-find)
          ("C-c n s" . consult-org-roam-search))
@@ -802,8 +746,7 @@ rewrites to an id: link on save."
   (setq consult-org-roam-grep-func #'consult-ripgrep)
   (consult-org-roam-mode 1))
 
-(use-package ob-mermaid
-  :ensure t)
+(use-package ob-mermaid)
 
 (use-package markdown-mode
   :commands (gfm-mode
@@ -818,7 +761,6 @@ rewrites to an id: link on save."
         ("C-c C-e" . markdown-do)))
 
 (use-package markdown-mermaid
-  :ensure t
   :after markdown-mode
   :commands (markdown-mermaid-preview)
   :bind (:map markdown-mode-map
@@ -865,12 +807,10 @@ rewrites to an id: link on save."
   :hook (after-init . envrc-global-mode))
 
 (use-package mise
-  :ensure t
   :hook (prog-mode . mise-mode))
 
 ;; **** Terminal ****
 (use-package ghostel
-  :ensure t
   :pin melpa-stable ; matching binary is only available for released versions
   :preface
   (defun byronc/ghostel-dwim ()
@@ -892,7 +832,6 @@ rewrites to an id: link on save."
 
 ;; **** Machine intelligence ****
 (use-package gptel
-  :ensure t
   :after auth-source
   :bind ("C-c M" . gptel-menu)
   :commands (gptel gptel-send gptel-org-set-topic)
@@ -916,7 +855,6 @@ rewrites to an id: link on save."
   (add-to-list 'package-pinned-packages (cons pkg "melpa-stable")))
 
 (use-package agent-shell
-  :ensure t
   :after auth-source
   :custom
   (agent-shell-prefer-viewport-interaction t)
@@ -969,7 +907,6 @@ rewrites to an id: link on save."
 
 ;; **** Source Control ****
 (use-package magit
-  :ensure t
   :pin melpa-stable
   :demand t
   :after project
@@ -980,13 +917,11 @@ rewrites to an id: link on save."
          ("m" . magit-project-status)))
 
 (use-package forge
-  :ensure t
   :pin melpa-stable
   :defer t
   :after magit)
 
 (use-package diff-hl
-  :ensure t
   :after magit
   :hook
   ((dired-mode . diff-hl-dired-mode)
@@ -995,12 +930,10 @@ rewrites to an id: link on save."
   (global-diff-hl-mode))
 
 (use-package git-timemachine
-  :ensure t
   :commands (git-timemachine))
 
 ;; **** Structural Editing ****
 (use-package smartparens
-  :ensure t
   :hook
   ((prog-mode . smartparens-mode)
    (emacs-lisp-mode . smartparens-strict-mode))
@@ -1018,7 +951,6 @@ rewrites to an id: link on save."
   (show-smartparens-global-mode 1))
 
 (use-package rainbow-delimiters
-  :ensure t
   :hook prog-mode)
 
 ;; **** White space ****
@@ -1035,10 +967,6 @@ rewrites to an id: link on save."
          (prog-mode . enable-whitespace)))
 
 ;; **** Code understanding and navigation ****
-(setq-default display-line-numbers-type 'absolute)
-(dolist (hook '(prog-mode-hook conf-mode-hook))
-  (add-hook hook #'display-line-numbers-mode))
-
 (use-package outline
   :ensure nil
   :commands outline-minor-mode
@@ -1057,7 +985,6 @@ rewrites to an id: link on save."
         (setq buffer-display-table display-table))))))
 
 (use-package eglot
-  :ensure t
   :commands (eglot-ensure
              eglot-rename
              eglot-format-buffer)
@@ -1082,7 +1009,6 @@ rewrites to an id: link on save."
   (advice-add 'indent-region :around #'byronc/eglot-maybe-format-region))
 
 (use-package eglot-multi-preset
-  :ensure t
   :vc (:url "https://github.com/kn66/eglot-multi-preset.git" :rev :newest)
   :config
   (eglot-multi-preset-mode 1))
@@ -1097,7 +1023,6 @@ rewrites to an id: link on save."
 
 ;; Allow eglot to navigate into jar archives pointed to by clojure-lsp
 (use-package jarchive
-  :ensure t
   :after eglot
   :config
   (jarchive-setup))
@@ -1105,7 +1030,6 @@ rewrites to an id: link on save."
 ;; **** Languages ****
 ;; ***** Clojure *****
 (use-package clojure-mode
-  :ensure t
   :pin melpa-stable
   :after smartparens
   :mode "\\.fiddle\\'" ;Calva fiddle
@@ -1116,7 +1040,6 @@ rewrites to an id: link on save."
          (clojure-mode . eglot-ensure)))
 
 (use-package cider
-  :ensure t
   :pin melpa-stable
   :after clojure-mode
   :custom
@@ -1134,15 +1057,12 @@ rewrites to an id: link on save."
                          (remove-hook 'completion-at-point-functions 'cider-complete-at-point)))))
 
 ;; **** Docker ****
-(use-package dockerfile-mode
-  :ensure t)
+(use-package dockerfile-mode)
 
 ;; **** GraphQL ****
-(use-package graphql-mode
-  :ensure t)
+(use-package graphql-mode)
 
 (use-package graphviz-dot-mode
-  :ensure t
   :custom
   (graphviz-dot-indent-width 4))
 
@@ -1169,24 +1089,19 @@ rewrites to an id: link on save."
   (python-ts-mode . eglot-ensure))
 
 (use-package pyvenv-auto
-  :ensure t
   :hook ((python-mode . pyvenv-auto-run)))
 
 ;; **** Swift ****
-(use-package swift-mode
-  :ensure t)
+(use-package swift-mode)
 
 ;; **** Terraform ****
-(use-package terraform-mode
-  :ensure t)
+(use-package terraform-mode)
 
 ;; **** YAML ****
-(use-package yaml-mode
-  :ensure t)
+(use-package yaml-mode)
 
 ;; **** Zig ****
 (use-package zig-mode
-  :ensure t
   :hook
   (zig-mode . (lambda ()
                 (smartparens-mode -1)
@@ -1196,17 +1111,32 @@ rewrites to an id: link on save."
 (use-package emacs
   :ensure nil
   :demand t
+
   :bind
-  ("s-u" . revert-buffer)
+  (("s-u" . revert-buffer)
+   ("C-c *" . isearch-forward-thing-at-point))
+
   :hook
-  (compilation-filter . ansi-color-compilation-filter)
-  (text-mode . visual-line-mode)
-  (text-mode . visual-wrap-prefix-mode)
-  (after-save . executable-make-buffer-file-executable-if-script-p)
+  ((compilation-filter . ansi-color-compilation-filter)
+   (text-mode . visual-line-mode)
+   (text-mode . visual-wrap-prefix-mode)
+   (after-save . executable-make-buffer-file-executable-if-script-p)
+   (emacs-startup . show-paren-mode)
+   (emacs-startup . winner-mode)
+   (emacs-startup . delete-selection-mode)
+   (prog-mode . display-line-numbers-mode)
+   (conf-mode . display-line-numbers-mode))
+
   :custom
   (window-combination-resize t)
   (set-mark-command-repeat-pop t)
+  (scroll-margin 10)
+
   :config
+  (setq-default truncate-lines nil)
+  (setq-default display-line-numbers-type 'absolute)
+  (setq save-interprogram-paste-before-kill t)
+  (setq confirm-kill-emacs 'y-or-n-p)
   ;; macOS specifics
   (when (eq system-type 'darwin)
     (setq mac-option-modifier 'meta)
