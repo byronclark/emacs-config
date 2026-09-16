@@ -791,7 +791,8 @@ rewrites to an id: link on save."
    '(".projectile" ; carry over from projectile
      "deps.edn"
      "nbb.edn"
-     "shadow-cljs.edn"))
+     "shadow-cljs.edn"
+     "pyproject.toml"))
   :config
   (defun byronc/project-kill-relative-path ()
     "Kill the project relative path of the file visited in the current buffer."
