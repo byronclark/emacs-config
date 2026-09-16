@@ -172,8 +172,7 @@ Functions run after agent-shell and its agent integrations have loaded.")
   (fontaine-mode 1))
 
 (use-package mood-line
-  :init
-  (mood-line-mode))
+  :hook (emacs-startup . mood-line-mode))
 
 (use-package pulsar
   :bind (:map global-map
