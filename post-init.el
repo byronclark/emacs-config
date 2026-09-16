@@ -743,6 +743,8 @@ rewrites to an id: link on save."
   :bind (("C-c n f" . consult-org-roam-file-find)
          ("C-c n s" . consult-org-roam-search))
   :config
+  ;; Upstream bug: consult-org-roam never defvars this.
+  (defvar org-roam-buffer-open-buffer-list nil)
   (setq consult-org-roam-grep-func #'consult-ripgrep)
   (consult-org-roam-mode 1))
 
