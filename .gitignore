@@ -13,3 +13,5 @@
 !pre-init.el
 !post-init.el
 !var/snippets/
+!byronc/
+!byronc/*.el

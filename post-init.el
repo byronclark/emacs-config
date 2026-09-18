@@ -907,6 +907,20 @@ rewrites to an id: link on save."
   (run-hooks 'byronc/agent-shell-configure-hook)
   :commands (agent-shell))
 
+;; Live view of every agent-shell session and the perspective it's running in.
+;; Demanded so the consult source is registered before the first C-x b.
+(use-package agent-shell-sessions
+  :ensure nil
+  :load-path "byronc"
+  :demand t
+  :bind ("C-c A" . agent-shell-sessions)
+  :config
+  (with-eval-after-load 'consult
+    (add-to-list 'consult-buffer-sources 'agent-shell-sessions-consult-source t))
+  ;; Candidates are buffer names, so the usual buffer actions apply.
+  (with-eval-after-load 'embark
+    (add-to-list 'embark-keymap-alist '(agent-shell-session embark-buffer-map))))
+
 ;; **** Source Control ****
 (use-package magit
   :pin melpa-stable
