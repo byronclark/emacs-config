@@ -30,6 +30,8 @@
 (use-package use-package-ensure-system-package
   :ensure nil)
 
+(defvar byronc/vendored-packages-dir (expand-file-name "byronc" minimal-emacs-user-directory))
+
 (defvar byronc/emacs-local-init-dir (expand-file-name "init" byronc/emacs-local-dir))
 
 (defvar byronc/agent-shell-configure-hook nil
@@ -911,7 +913,7 @@ rewrites to an id: link on save."
 ;; Demanded so the consult source is registered before the first C-x b.
 (use-package agent-shell-sessions
   :ensure nil
-  :load-path "byronc"
+  :load-path byronc/vendored-packages-dir
   :demand t
   :bind ("C-c A" . agent-shell-sessions)
   :config
