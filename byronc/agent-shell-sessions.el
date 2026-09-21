@@ -14,7 +14,8 @@
 ;;   `consult-buffer' under the `a' narrowing key.
 ;;
 ;; Both jump to the perspective owning a session rather than importing it into
-;; the current one.  `agent-shell' and `perspective' are soft dependencies.
+;; the current one, landing on its viewport when it has one.  `agent-shell' and
+;; `perspective' are soft dependencies.
 
 ;;; Code:
 
@@ -28,11 +29,16 @@
 (declare-function agent-shell-buffers "agent-shell")
 (declare-function agent-shell-status "agent-shell" (&key shell-buffer))
 (declare-function agent-shell-cwd "agent-shell-project")
+(declare-function agent-shell-viewport--buffer "agent-shell-viewport"
+                  (&key shell-buffer existing-only))
 (declare-function consult--buffer-preview "consult")
 (declare-function consult--state-with-return "consult")
 (declare-function persp-buffers "perspective")
 (declare-function persp-switch-to-buffer "perspective" (buffer-or-name &optional norecord))
 (declare-function perspectives-hash "perspective" (&optional frame))
+
+;; Set by `agent-shell-viewport' when it loads.
+(defvar agent-shell-prefer-viewport-interaction)
 
 (defgroup agent-shell-sessions nil
   "Cross-perspective view of `agent-shell' sessions."
@@ -64,18 +70,29 @@ The timer only does work while the list is on screen."
    ((not (fboundp 'agent-shell-status)) 'unknown)
    (t (or (ignore-errors (agent-shell-status :shell-buffer buffer)) 'unknown))))
 
-(defun agent-shell-sessions--perspectives (buffer)
-  "Return the sorted names of every perspective holding BUFFER.
+(defun agent-shell-sessions--perspective-index ()
+  "Return a hash mapping each buffer to the names of perspectives holding it.
 Perspectives are frame-local, so this looks across all frames."
-  (when (and (bound-and-true-p persp-mode)
-             (fboundp 'perspectives-hash))
-    (let (names)
+  (let ((index (make-hash-table :test #'eq)))
+    (when (and (bound-and-true-p persp-mode)
+               (fboundp 'perspectives-hash))
       (dolist (frame (frame-list))
         (maphash (lambda (name persp)
-                   (when (memq buffer (persp-buffers persp))
-                     (cl-pushnew name names :test #'equal)))
-                 (perspectives-hash frame)))
-      (sort names #'string<))))
+                   (dolist (buffer (persp-buffers persp))
+                     (cl-pushnew name (gethash buffer index) :test #'equal)))
+                 (perspectives-hash frame))))
+    index))
+
+(defun agent-shell-sessions--perspectives (buffers &optional index)
+  "Return the sorted names of every perspective holding any of BUFFERS.
+BUFFERS is a buffer or a list of buffers; nil entries are ignored.  INDEX
+defaults to a freshly built `agent-shell-sessions--perspective-index'."
+  (let ((index (or index (agent-shell-sessions--perspective-index)))
+        names)
+    (dolist (buffer (delq nil (ensure-list buffers)))
+      (dolist (name (gethash buffer index))
+        (cl-pushnew name names :test #'equal)))
+    (sort names #'string<)))
 
 (defun agent-shell-sessions--project (buffer)
   "Return a short project label for BUFFER, or nil."
@@ -102,22 +119,28 @@ Perspectives are frame-local, so this looks across all frames."
 (defun agent-shell-sessions-list ()
   "Return a plist per live `agent-shell' session.
 
-Each plist carries :buffer, :name, :status, :perspectives, :project and
-:prompt.  Sorted by status so blocked sessions come first, then by
-recency of access within a status."
+Each plist carries :buffer, :viewport, :name, :status, :perspectives,
+:project and :prompt.  :buffer and :name stay the shell: the viewport is
+killed and recreated as you work, so it is not a stable identity.  Sorted
+by status so blocked sessions come first, then by recency of access
+within a status."
   (when (fboundp 'agent-shell-buffers)
     (let ((sessions nil)
-          (index 0))
+          (index 0)
+          (perspectives (agent-shell-sessions--perspective-index)))
       (dolist (buffer (agent-shell-buffers))
         (when (buffer-live-p buffer)
-          (push (list :buffer buffer
-                      :name (buffer-name buffer)
-                      :status (agent-shell-sessions--status buffer)
-                      :perspectives (agent-shell-sessions--perspectives buffer)
-                      :project (agent-shell-sessions--project buffer)
-                      :prompt (agent-shell-sessions--last-prompt buffer)
-                      :order index)
-                sessions))
+          (let ((viewport (agent-shell-sessions--viewport buffer)))
+            (push (list :buffer buffer
+                        :viewport viewport
+                        :name (buffer-name buffer)
+                        :status (agent-shell-sessions--status buffer)
+                        :perspectives (agent-shell-sessions--perspectives
+                                       (list buffer viewport) perspectives)
+                        :project (agent-shell-sessions--project buffer)
+                        :prompt (agent-shell-sessions--last-prompt buffer)
+                        :order index)
+                  sessions)))
         (setq index (1+ index)))
       (sort (nreverse sessions)
             (lambda (a b)
@@ -126,6 +149,32 @@ recency of access within a status."
                 (if (= ra rb)
                     (< (plist-get a :order) (plist-get b :order))
                   (< ra rb))))))))
+
+;;;; Interaction surface
+
+(defun agent-shell-sessions--viewport (shell)
+  "Return the existing viewport buffer for SHELL, or nil.
+A nil SHELL would make `agent-shell-viewport--buffer' prompt for one,
+from a one-second timer."
+  (when (and (buffer-live-p shell)
+             (fboundp 'agent-shell-viewport--buffer))
+    (ignore-errors
+      (agent-shell-viewport--buffer :shell-buffer shell :existing-only t))))
+
+(defun agent-shell-sessions--on-screen-p (buffer)
+  "Return non-nil when BUFFER is displayed on a visible frame."
+  (get-buffer-window buffer 'visible))
+
+(defun agent-shell-sessions--interaction-buffer (shell)
+  "Return the buffer to land on for the session whose shell is SHELL.
+That is the viewport when one exists and either
+`agent-shell-prefer-viewport-interaction' is on or it is already on
+screen; otherwise SHELL."
+  (or (when-let* ((viewport (agent-shell-sessions--viewport shell)))
+        (and (or (bound-and-true-p agent-shell-prefer-viewport-interaction)
+                 (agent-shell-sessions--on-screen-p viewport))
+             viewport))
+      shell))
 
 ;;;; Shared presentation
 
@@ -138,14 +187,18 @@ recency of access within a status."
     ('dead    (propertize "dead"    'face 'shadow))
     (_        (propertize "unknown" 'face 'shadow))))
 
-(defun agent-shell-sessions--display (buffer)
-  "Show BUFFER in the perspective that owns it.
-Plain `switch-to-buffer' would drag BUFFER into the current perspective
-instead."
-  (if (and (bound-and-true-p persp-mode)
+(defun agent-shell-sessions--display (buffer &optional other-window)
+  "Show the session whose shell is BUFFER, in the perspective that owns it.
+Plain `switch-to-buffer' would drag the session into the current
+perspective instead.  With OTHER-WINDOW, show it here without leaving,
+which imports it into the current perspective, unlike RET."
+  (let ((target (agent-shell-sessions--interaction-buffer buffer)))
+    (cond
+     (other-window (switch-to-buffer-other-window target))
+     ((and (bound-and-true-p persp-mode)
            (fboundp 'persp-switch-to-buffer))
-      (persp-switch-to-buffer buffer)
-    (pop-to-buffer buffer)))
+      (persp-switch-to-buffer target))
+     (t (pop-to-buffer target)))))
 
 ;;;; Live view
 
@@ -223,7 +276,7 @@ instead."
 (defun agent-shell-sessions-visit-other-window ()
   "Show the session at point in another window, without leaving this view."
   (interactive)
-  (switch-to-buffer-other-window (agent-shell-sessions--session-at-point)))
+  (agent-shell-sessions--display (agent-shell-sessions--session-at-point) t))
 
 (defun agent-shell-sessions-kill ()
   "Kill the session at point, after confirmation."
@@ -295,12 +348,28 @@ instead."
   (when-let* ((buffer (and candidate (get-buffer candidate))))
     (agent-shell-sessions--display buffer)))
 
+(defun agent-shell-sessions--consult-preview-candidate (candidate)
+  "Return what preview should show for session CANDIDATE.
+The viewport when that is where RET would land, CANDIDATE itself
+otherwise."
+  (or (when-let* ((shell (and candidate (get-buffer candidate)))
+                  (target (agent-shell-sessions--interaction-buffer shell)))
+        (and (not (eq target shell)) target))
+      candidate))
+
 (defun agent-shell-sessions--consult-state ()
   "Pair consult's buffer preview with a perspective-aware jump.
-Consult previews with a non-nil NORECORD, which `perspective' reads as a
-signal not to associate the buffer, so browsing does not pull sessions in."
-  (consult--state-with-return (consult--buffer-preview)
-                              #'agent-shell-sessions--consult-action))
+Preview resolves the same surface the jump lands on.  Consult previews
+with a non-nil NORECORD, which `perspective' reads as a signal not to
+associate the buffer, so browsing does not pull sessions in."
+  (let ((preview (consult--buffer-preview)))
+    (consult--state-with-return
+     (lambda (action candidate)
+       (funcall preview action
+                (if (eq action 'preview)
+                    (agent-shell-sessions--consult-preview-candidate candidate)
+                  candidate)))
+     #'agent-shell-sessions--consult-action)))
 
 (defvar agent-shell-sessions-consult-source
   ;; `marginalia' annotates the `buffer' category and its annotation wins over

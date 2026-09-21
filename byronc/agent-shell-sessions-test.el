@@ -17,8 +17,9 @@
 (require 'ring)
 (require 'agent-shell-sessions)
 
-;; Not loaded in batch, so `let' would bind it lexically rather than dynamically.
+;; Not loaded in batch, so `let' would bind them lexically rather than dynamically.
 (defvar persp-mode)
+(defvar agent-shell-prefer-viewport-interaction)
 
 ;;;; Helpers
 
@@ -39,6 +40,16 @@
     (dolist (prompt prompts)
       (ring-insert comint-input-ring prompt))))
 
+(defun agent-shell-sessions-test--make-persp (name buffers)
+  "Return a perspective named NAME holding BUFFERS.
+A real struct when `perspective' is loaded: a `cl-letf' stub for the
+`persp-buffers' accessor does not reach code running in a live Emacs."
+  (if (fboundp 'make-persp-internal)
+      (let ((persp (make-persp-internal :name name)))
+        (setf (persp-buffers persp) buffers)
+        persp)
+    (cons name buffers)))
+
 (defmacro agent-shell-sessions-test--with-perspectives (spec &rest body)
   "Run BODY with `perspectives-hash' stubbed from SPEC.
 
@@ -47,9 +58,25 @@ SPEC is an alist of (PERSPECTIVE-NAME . BUFFERS)."
   `(let ((persp-mode t)
          (table (make-hash-table :test #'equal)))
      (dolist (entry ,spec)
-       (puthash (car entry) entry table))
+       (puthash (car entry)
+                (agent-shell-sessions-test--make-persp (car entry) (cdr entry))
+                table))
      (cl-letf (((symbol-function 'perspectives-hash) (lambda (&optional _frame) table))
-               ((symbol-function 'persp-buffers) (lambda (persp) (cdr persp))))
+               ((symbol-function 'persp-buffers)
+                (if (fboundp 'make-persp-internal)
+                    (symbol-function 'persp-buffers)
+                  (lambda (persp) (cdr persp)))))
+       ,@body)))
+
+(defmacro agent-shell-sessions-test--with-viewport (spec &rest body)
+  "Run BODY with `agent-shell-viewport--buffer' stubbed from SPEC.
+
+SPEC is an alist of (SHELL-BUFFER . VIEWPORT-BUFFER)."
+  (declare (indent 1))
+  `(let ((pairs ,spec))
+     (cl-letf (((symbol-function 'agent-shell-viewport--buffer)
+                (lambda (&rest args)
+                  (alist-get (plist-get args :shell-buffer) pairs))))
        ,@body)))
 
 ;;;; Last prompt
@@ -123,6 +150,69 @@ SPEC is an alist of (PERSPECTIVE-NAME . BUFFERS)."
     (let ((persp-mode nil))
       (should-not (agent-shell-sessions--perspectives shell)))))
 
+(ert-deftest agent-shell-sessions-test-perspectives-unions-shell-and-viewport ()
+  (agent-shell-sessions-test--with-buffers (shell viewport)
+    (agent-shell-sessions-test--with-perspectives
+        (list (cons "work" (list viewport)) (cons "plan" (list shell)))
+      (should (equal (agent-shell-sessions--perspectives (list shell viewport))
+                     '("plan" "work"))))))
+
+(ert-deftest agent-shell-sessions-test-perspectives-de-dups-and-ignores-nil ()
+  (agent-shell-sessions-test--with-buffers (shell viewport)
+    (agent-shell-sessions-test--with-perspectives
+        (list (cons "work" (list shell viewport)))
+      (should (equal (agent-shell-sessions--perspectives (list shell nil viewport))
+                     '("work"))))))
+
+;;;; Interaction surface
+
+(ert-deftest agent-shell-sessions-test-interaction-prefers-viewport ()
+  (agent-shell-sessions-test--with-buffers (shell viewport)
+    (agent-shell-sessions-test--with-viewport (list (cons shell viewport))
+      (let ((agent-shell-prefer-viewport-interaction t))
+        (should (eq (agent-shell-sessions--interaction-buffer shell) viewport))))))
+
+(ert-deftest agent-shell-sessions-test-interaction-shell-without-viewport ()
+  (agent-shell-sessions-test--with-buffers (shell)
+    (agent-shell-sessions-test--with-viewport nil
+      (let ((agent-shell-prefer-viewport-interaction t))
+        (should (eq (agent-shell-sessions--interaction-buffer shell) shell))))))
+
+(ert-deftest agent-shell-sessions-test-interaction-shell-when-preference-off ()
+  (agent-shell-sessions-test--with-buffers (shell viewport)
+    (agent-shell-sessions-test--with-viewport (list (cons shell viewport))
+      (cl-letf (((symbol-function 'agent-shell-sessions--on-screen-p)
+                 (lambda (_buffer) nil)))
+        (let ((agent-shell-prefer-viewport-interaction nil))
+          (should (eq (agent-shell-sessions--interaction-buffer shell) shell)))))))
+
+(ert-deftest agent-shell-sessions-test-interaction-viewport-when-on-screen ()
+  (agent-shell-sessions-test--with-buffers (shell viewport)
+    (agent-shell-sessions-test--with-viewport (list (cons shell viewport))
+      (cl-letf (((symbol-function 'agent-shell-sessions--on-screen-p)
+                 (lambda (buffer) (eq buffer viewport))))
+        (let ((agent-shell-prefer-viewport-interaction nil))
+          (should (eq (agent-shell-sessions--interaction-buffer shell) viewport)))))))
+
+(ert-deftest agent-shell-sessions-test-interaction-never-asks-about-dead-shell ()
+  ;; `agent-shell-viewport--buffer' signals on a dead shell, so the guard has
+  ;; to come before the call.
+  (let ((shell (generate-new-buffer " *test-dead*"))
+        (asked nil))
+    (kill-buffer shell)
+    (cl-letf (((symbol-function 'agent-shell-viewport--buffer)
+               (lambda (&rest _) (setq asked t) nil)))
+      (let ((agent-shell-prefer-viewport-interaction t))
+        (should (eq (agent-shell-sessions--interaction-buffer shell) shell))
+        (should-not asked)))))
+
+(ert-deftest agent-shell-sessions-test-interaction-shell-without-viewport-support ()
+  (agent-shell-sessions-test--with-buffers (shell)
+    (cl-letf (((symbol-function 'agent-shell-viewport--buffer) nil))
+      (fmakunbound 'agent-shell-viewport--buffer)
+      (let ((agent-shell-prefer-viewport-interaction t))
+        (should (eq (agent-shell-sessions--interaction-buffer shell) shell))))))
+
 ;;;; Session list
 
 (ert-deftest agent-shell-sessions-test-list-empty-without-agent-shell ()
@@ -176,6 +266,17 @@ SPEC is an alist of (PERSPECTIVE-NAME . BUFFERS)."
       (let ((session (car (agent-shell-sessions-list))))
         (should (equal (plist-get session :project) "videra"))
         (should (equal (plist-get session :prompt) "make the tests pass"))))))
+
+(ert-deftest agent-shell-sessions-test-list-carries-viewport-but-keys-on-shell ()
+  (agent-shell-sessions-test--with-buffers (shell viewport)
+    (agent-shell-sessions-test--with-viewport (list (cons shell viewport))
+      (cl-letf (((symbol-function 'agent-shell-buffers) (lambda () (list shell)))
+                ((symbol-function 'agent-shell-status) (lambda (&rest _) 'ready))
+                ((symbol-function 'agent-shell-cwd) (lambda () "/tmp/proj/")))
+        (let ((session (car (agent-shell-sessions-list))))
+          (should (eq (plist-get session :buffer) shell))
+          (should (eq (plist-get session :viewport) viewport))
+          (should (equal (plist-get session :name) (buffer-name shell))))))))
 
 ;;;; Project label
 
