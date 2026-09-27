@@ -1069,6 +1069,14 @@ rewrites to an id: link on save."
   (cider-eldoc-display-for-symbol-at-point nil)
   (cider-enable-nrepl-jvmti-agent t)
   (cider-nbb-command "npx nbb") ;Prefer project version of nbb.
+  :config
+  (defvar cider-edit-jack-in-command)
+  (define-advice cider-start-menu--apply-args (:around (orig args command) fix-edit-flag)
+    "Work around cider#4201: bind the edit flag dynamically."
+    (let ((cider-edit-jack-in-command
+           (or (and (member "--edit-command" args) t)
+               cider-edit-jack-in-command)))
+      (funcall orig args command)))
   :hook ((cider-repl-mode . smartparens-strict-mode)
          (cider-repl-mode . subword-mode)
          (cider-mode . (lambda ()
