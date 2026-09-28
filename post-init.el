@@ -859,7 +859,6 @@ rewrites to an id: link on save."
 (use-package agent-shell
   :after auth-source
   :custom
-  (agent-shell-prefer-viewport-interaction t)
   (agent-shell-context-sources '(files region error))
   (agent-shell-busy-indicator-frames 'dots-block)
 
