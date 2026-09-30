@@ -40,6 +40,30 @@
     (dolist (prompt prompts)
       (ring-insert comint-input-ring prompt))))
 
+(defmacro agent-shell-sessions-test--with-sessions (spec &rest body)
+  "Run BODY with `agent-shell' stubbed from SPEC.
+
+SPEC is a list of (BUFFER STATUS SECONDS-AGO), in access order.  A nil
+SECONDS-AGO means no activity yet."
+  (declare (indent 1))
+  `(let* ((spec ,spec)
+          (now (current-time)))
+     (cl-letf (((symbol-function 'agent-shell-buffers)
+                (lambda () (mapcar #'car spec)))
+               ((symbol-function 'agent-shell-status)
+                (lambda (&rest args)
+                  (nth 1 (assq (plist-get args :shell-buffer) spec))))
+               ((symbol-function 'agent-shell-last-activity-time)
+                (lambda (&rest args)
+                  (when-let* ((ago (nth 2 (assq (plist-get args :shell-buffer) spec))))
+                    (time-subtract now ago))))
+               ((symbol-function 'agent-shell-cwd) (lambda () "/tmp/proj/")))
+       ,@body)))
+
+(defun agent-shell-sessions-test--order ()
+  "Return the buffers of `agent-shell-sessions-list', in order."
+  (mapcar (lambda (s) (plist-get s :buffer)) (agent-shell-sessions-list)))
+
 (defun agent-shell-sessions-test--make-persp (name buffers)
   "Return a perspective named NAME holding BUFFERS.
 A real struct when `perspective' is loaded: a `cl-letf' stub for the
@@ -257,7 +281,7 @@ SPEC is an alist of (SHELL-BUFFER . VIEWPORT-BUFFER)."
                                (agent-shell-sessions-list))
                        (list live)))))))
 
-(ert-deftest agent-shell-sessions-test-list-carries-project-and-prompt ()
+(ert-deftest agent-shell-sessions-test-list-carries-project-and-title ()
   (agent-shell-sessions-test--with-buffers (shell)
     (agent-shell-sessions-test--set-prompts shell "make the tests pass")
     (cl-letf (((symbol-function 'agent-shell-buffers) (lambda () (list shell)))
@@ -265,7 +289,37 @@ SPEC is an alist of (SHELL-BUFFER . VIEWPORT-BUFFER)."
               ((symbol-function 'agent-shell-cwd) (lambda () "/Users/byron/src/videra/")))
       (let ((session (car (agent-shell-sessions-list))))
         (should (equal (plist-get session :project) "videra"))
-        (should (equal (plist-get session :prompt) "make the tests pass"))))))
+        (should (equal (plist-get session :title) "make the tests pass"))))))
+
+(ert-deftest agent-shell-sessions-test-list-blocked-longest-waiting-first ()
+  (agent-shell-sessions-test--with-buffers (recent older)
+    (agent-shell-sessions-test--with-sessions
+        (list (list recent 'blocked 10) (list older 'blocked 600))
+      (should (equal (agent-shell-sessions-test--order) (list older recent))))))
+
+(ert-deftest agent-shell-sessions-test-list-ready-most-recent-first ()
+  (agent-shell-sessions-test--with-buffers (visited finished)
+    (agent-shell-sessions-test--with-sessions
+        (list (list visited 'ready 600) (list finished 'ready 10))
+      (should (equal (agent-shell-sessions-test--order) (list finished visited))))))
+
+(ert-deftest agent-shell-sessions-test-list-inactive-sessions-go-last ()
+  (agent-shell-sessions-test--with-buffers (fresh used)
+    (agent-shell-sessions-test--with-sessions
+        (list (list fresh 'ready nil) (list used 'ready 600))
+      (should (equal (agent-shell-sessions-test--order) (list used fresh))))))
+
+(ert-deftest agent-shell-sessions-test-list-busy-keeps-access-order ()
+  (agent-shell-sessions-test--with-buffers (visited streaming)
+    (agent-shell-sessions-test--with-sessions
+        (list (list visited 'busy 30) (list streaming 'busy 1))
+      (should (equal (agent-shell-sessions-test--order) (list visited streaming))))))
+
+(ert-deftest agent-shell-sessions-test-list-status-outranks-activity ()
+  (agent-shell-sessions-test--with-buffers (ready blocked)
+    (agent-shell-sessions-test--with-sessions
+        (list (list ready 'ready 1) (list blocked 'blocked 600))
+      (should (equal (agent-shell-sessions-test--order) (list blocked ready))))))
 
 (ert-deftest agent-shell-sessions-test-list-carries-viewport-but-keys-on-shell ()
   (agent-shell-sessions-test--with-buffers (shell viewport)
@@ -277,6 +331,86 @@ SPEC is an alist of (SHELL-BUFFER . VIEWPORT-BUFFER)."
           (should (eq (plist-get session :buffer) shell))
           (should (eq (plist-get session :viewport) viewport))
           (should (equal (plist-get session :name) (buffer-name shell))))))))
+
+;;;; Title
+
+(ert-deftest agent-shell-sessions-test-title-prefers-reported-title ()
+  (agent-shell-sessions-test--with-buffers (shell)
+    (agent-shell-sessions-test--set-prompts shell "yes")
+    (with-current-buffer shell
+      (setq agent-shell-sessions--title "Fix the\n  flaky test"))
+    (should (equal (agent-shell-sessions--session-title shell) "Fix the flaky test"))))
+
+(ert-deftest agent-shell-sessions-test-title-falls-back-to-last-prompt ()
+  (agent-shell-sessions-test--with-buffers (shell)
+    (agent-shell-sessions-test--set-prompts shell "make the tests pass")
+    (should (equal (agent-shell-sessions--session-title shell) "make the tests pass"))))
+
+;;;; Idle age
+
+(defun agent-shell-sessions-test--age (status seconds-ago)
+  "Return the age label for a STATUS session active SECONDS-AGO."
+  (agent-shell-sessions--age-label
+   (list :status status
+         :activity (and seconds-ago (time-subtract nil seconds-ago)))))
+
+(ert-deftest agent-shell-sessions-test-age-formats-units ()
+  (should (equal (agent-shell-sessions-test--age 'ready 12) "12s"))
+  (should (equal (agent-shell-sessions-test--age 'ready 240) "4m"))
+  (should (equal (agent-shell-sessions-test--age 'ready 7300) "2h"))
+  (should (equal (agent-shell-sessions-test--age 'ready 200000) "2d")))
+
+(ert-deftest agent-shell-sessions-test-age-dash-without-activity ()
+  (should (equal (agent-shell-sessions-test--age 'ready nil) "—")))
+
+(ert-deftest agent-shell-sessions-test-age-flags-stalled-busy-session ()
+  (let ((agent-shell-sessions-stall-threshold 300))
+    (should (eq (get-text-property 0 'face (agent-shell-sessions-test--age 'busy 400))
+                'warning))
+    (should-not (get-text-property 0 'face (agent-shell-sessions-test--age 'busy 100)))
+    (should-not (get-text-property 0 'face (agent-shell-sessions-test--age 'ready 400)))))
+
+;;;; Events
+
+(defmacro agent-shell-sessions-test--capturing-refreshes (&rest body)
+  "Run BODY counting scheduled refreshes in `refreshes'."
+  (declare (indent 0))
+  `(let ((refreshes 0))
+     (cl-letf (((symbol-function 'agent-shell-sessions--schedule-refresh)
+                (lambda () (cl-incf refreshes))))
+       ,@body)))
+
+(ert-deftest agent-shell-sessions-test-event-caches-title ()
+  (agent-shell-sessions-test--with-buffers (shell)
+    (agent-shell-sessions-test--capturing-refreshes
+      (with-current-buffer shell
+        (agent-shell-sessions--on-event
+         (list (cons :data (list (cons :title "Refactor the loader")))
+               (cons :event 'session-title-changed))))
+      (should (equal (agent-shell-sessions--session-title shell) "Refactor the loader"))
+      (should (= refreshes 1)))))
+
+(ert-deftest agent-shell-sessions-test-event-refreshes-on-status-change ()
+  (agent-shell-sessions-test--capturing-refreshes
+    (dolist (kind '(permission-request permission-response turn-complete
+                    input-submitted clean-up))
+      (agent-shell-sessions--on-event (list (cons :event kind))))
+    (should (= refreshes 5))))
+
+(ert-deftest agent-shell-sessions-test-event-ignores-streaming ()
+  (agent-shell-sessions-test--capturing-refreshes
+    (agent-shell-sessions--on-event (list (cons :event 'agent-message-chunk)))
+    (agent-shell-sessions--on-event (list (cons :event 'tool-call-update)))
+    (should (= refreshes 0))))
+
+(ert-deftest agent-shell-sessions-test-subscribe-once-per-shell ()
+  (agent-shell-sessions-test--with-buffers (shell)
+    (let ((calls nil))
+      (cl-letf (((symbol-function 'agent-shell-subscribe-to)
+                 (lambda (&rest args) (push (plist-get args :shell-buffer) calls) 1)))
+        (agent-shell-sessions--subscribe shell)
+        (with-current-buffer shell (agent-shell-sessions--subscribe))
+        (should (equal calls (list shell)))))))
 
 ;;;; Project label
 
