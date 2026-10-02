@@ -197,6 +197,7 @@ Functions run after agent-shell and its agent integrations have loaded.")
   :bind ([remap zap-to-char] . zop-up-to-char))
 
 (use-package crux
+  :pin melpa-stable
   :commands (crux-kill-buffer-truename)
   :bind (("C-M-z" . crux-indent-defun)
          ("C-^" . crux-top-join-line)
