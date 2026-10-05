@@ -289,7 +289,8 @@ SPEC is an alist of (SHELL-BUFFER . VIEWPORT-BUFFER)."
               ((symbol-function 'agent-shell-cwd) (lambda () "/Users/byron/src/videra/")))
       (let ((session (car (agent-shell-sessions-list))))
         (should (equal (plist-get session :project) "videra"))
-        (should (equal (plist-get session :title) "make the tests pass"))))))
+        (should (equal (plist-get session :title) "make the tests pass"))
+        (should-not (plist-get session :reply))))))
 
 (ert-deftest agent-shell-sessions-test-list-blocked-longest-waiting-first ()
   (agent-shell-sessions-test--with-buffers (recent older)
@@ -402,6 +403,64 @@ SPEC is an alist of (SHELL-BUFFER . VIEWPORT-BUFFER)."
     (agent-shell-sessions--on-event (list (cons :event 'agent-message-chunk)))
     (agent-shell-sessions--on-event (list (cons :event 'tool-call-update)))
     (should (= refreshes 0))))
+
+;;;; Last reply
+
+(defun agent-shell-sessions-test--events (buffer &rest events)
+  "Feed EVENTS to BUFFER's handler.
+Each is an event kind, or (KIND . TEXT) for a message chunk."
+  (cl-letf (((symbol-function 'agent-shell-sessions--schedule-refresh) #'ignore))
+    (with-current-buffer buffer
+      (dolist (event events)
+        (agent-shell-sessions--on-event
+         (if (consp event)
+             (list (cons :event (car event))
+                   (cons :data (list (cons :text-chunk (cdr event)))))
+           (list (cons :event event))))))))
+
+(ert-deftest agent-shell-sessions-test-reply-last-line-of-final-message ()
+  (agent-shell-sessions-test--with-buffers (shell)
+    (agent-shell-sessions-test--events
+     shell 'input-submitted
+     '(agent-message-chunk . "Done. Tests pass.\n\nShould I open ")
+     '(agent-message-chunk . "the PR?\n\n")
+     'turn-complete)
+    (should (equal (agent-shell-sessions--last-reply shell) "Should I open the PR?"))))
+
+(ert-deftest agent-shell-sessions-test-reply-drops-narration-before-tools ()
+  (agent-shell-sessions-test--with-buffers (shell)
+    (agent-shell-sessions-test--events
+     shell 'input-submitted
+     '(agent-message-chunk . "Let me run the tests.")
+     'tool-call-update
+     '(agent-message-chunk . "All green.")
+     'turn-complete)
+    (should (equal (agent-shell-sessions--last-reply shell) "All green."))))
+
+(ert-deftest agent-shell-sessions-test-reply-nil-when-turn-ends-on-a-tool ()
+  (agent-shell-sessions-test--with-buffers (shell)
+    (agent-shell-sessions-test--events
+     shell 'input-submitted
+     '(agent-message-chunk . "Running it.")
+     'tool-call-update
+     'turn-complete)
+    (should-not (agent-shell-sessions--last-reply shell))))
+
+(ert-deftest agent-shell-sessions-test-reply-cleared-by-next-prompt ()
+  (agent-shell-sessions-test--with-buffers (shell)
+    (agent-shell-sessions-test--events
+     shell '(agent-message-chunk . "First answer.") 'turn-complete)
+    (should (agent-shell-sessions--last-reply shell))
+    (agent-shell-sessions-test--events
+     shell 'input-submitted '(agent-message-chunk . "Working"))
+    (should-not (agent-shell-sessions--last-reply shell))))
+
+(ert-deftest agent-shell-sessions-test-reply-ignores-non-text-chunks ()
+  (agent-shell-sessions-test--with-buffers (shell)
+    (agent-shell-sessions-test--events
+     shell '(agent-message-chunk . "Here it is.") '(agent-message-chunk . nil)
+     'turn-complete)
+    (should (equal (agent-shell-sessions--last-reply shell) "Here it is."))))
 
 (ert-deftest agent-shell-sessions-test-subscribe-once-per-shell ()
   (agent-shell-sessions-test--with-buffers (shell)

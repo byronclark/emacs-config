@@ -138,6 +138,23 @@ defaults to a freshly built `agent-shell-sessions--perspective-index'."
          (buffer-local-value 'agent-shell-sessions--title buffer))
         (agent-shell-sessions--last-prompt buffer))))
 
+(defvar-local agent-shell-sessions--reply-chunks nil
+  "Message text streamed since the last prompt or tool call, newest first.")
+
+(defvar-local agent-shell-sessions--reply nil
+  "Last line of the shell's latest finished reply.
+`agent-shell' streams the text but keeps none of it.")
+
+(defun agent-shell-sessions--last-line (text)
+  "Return the last non-blank line of TEXT as one line, or nil."
+  (seq-some #'agent-shell-sessions--one-line
+            (reverse (split-string text "\n"))))
+
+(defun agent-shell-sessions--last-reply (buffer)
+  "Return the last line of BUFFER's latest finished reply, or nil."
+  (when (buffer-live-p buffer)
+    (buffer-local-value 'agent-shell-sessions--reply buffer)))
+
 (defun agent-shell-sessions--activity (buffer)
   "Return the time of BUFFER's latest prompt or agent notification, or nil."
   (when (and (buffer-live-p buffer)
@@ -172,7 +189,7 @@ streaming updates their activity constantly.  Ties keep access order."
   "Return a plist per live `agent-shell' session.
 
 Each plist carries :buffer, :viewport, :name, :status, :activity,
-:perspectives, :project and :title.  :buffer and :name stay the shell:
+:perspectives, :project, :title and :reply.  :buffer and :name stay the shell:
 the viewport is killed and recreated as you work, so it is not a stable
 identity.  Sorted by `agent-shell-sessions--before-p'."
   (when (fboundp 'agent-shell-buffers)
@@ -191,6 +208,7 @@ identity.  Sorted by `agent-shell-sessions--before-p'."
                                        (list buffer viewport) perspectives)
                         :project (agent-shell-sessions--project buffer)
                         :title (agent-shell-sessions--session-title buffer)
+                        :reply (agent-shell-sessions--last-reply buffer)
                         :order index)
                   sessions)))
         (setq index (1+ index)))
@@ -273,7 +291,8 @@ which imports it into the current perspective, unlike RET."
                    (agent-shell-sessions--age-label session)
                    (or (string-join (plist-get session :perspectives) ",") "—")
                    (or (plist-get session :project) "—")
-                   (or (plist-get session :title) ""))))
+                   (or (plist-get session :title) "")
+                   (or (plist-get session :reply) ""))))
    (agent-shell-sessions-list)))
 
 (defun agent-shell-sessions--revert (&rest _)
@@ -360,7 +379,7 @@ which imports it into the current perspective, unlike RET."
   "Major mode listing every `agent-shell' session across perspectives."
   (setq tabulated-list-format
         [("Status" 8 t) ("Idle" 6 nil) ("Perspective" 16 t) ("Project" 20 t)
-         ("Title" 0 nil)])
+         ("Title" 40 nil) ("Last reply" 0 nil)])
   (setq tabulated-list-padding 1)
   (setq tabulated-list-sort-key nil)
   (add-hook 'tabulated-list-revert-hook #'agent-shell-sessions--revert nil t)
@@ -406,10 +425,31 @@ The delay also lets a shell that sent `clean-up' finish dying first."
     (setq agent-shell-sessions--pending-refresh
           (run-with-timer 0.1 nil #'agent-shell-sessions--run-pending-refresh))))
 
+(defun agent-shell-sessions--collect-reply (kind event)
+  "Track the current shell's reply text for an event of KIND.
+Text before a tool call is narration, so only what follows the last one
+is kept."
+  (pcase kind
+    ('agent-message-chunk
+     (when-let* ((chunk (alist-get :text-chunk (alist-get :data event))))
+       (push chunk agent-shell-sessions--reply-chunks)))
+    ('tool-call-update
+     (setq agent-shell-sessions--reply-chunks nil))
+    ('input-submitted
+     (setq agent-shell-sessions--reply-chunks nil
+           agent-shell-sessions--reply nil))
+    ('turn-complete
+     (setq agent-shell-sessions--reply
+           (agent-shell-sessions--last-line
+            (apply #'concat (reverse agent-shell-sessions--reply-chunks)))
+           agent-shell-sessions--reply-chunks nil))))
+
 (defun agent-shell-sessions--on-event (event)
-  "Cache the title and schedule a refresh for EVENT from the current shell.
-Every event arrives here, streamed chunks included, so bail out early."
+  "Cache the title and reply and schedule a refresh for EVENT.
+Every event from the current shell arrives here, streamed chunks
+included, so bail out early."
   (let ((kind (alist-get :event event)))
+    (agent-shell-sessions--collect-reply kind event)
     (when (memq kind agent-shell-sessions--refresh-events)
       (when (eq kind 'session-title-changed)
         (setq agent-shell-sessions--title
@@ -446,16 +486,22 @@ state, so they go away with it."
   (mapcar (lambda (session) (plist-get session :name))
           agent-shell-sessions--consult-cache))
 
+(defun agent-shell-sessions--consult-perspectives-width ()
+  "Return the width of the widest perspective list among cached sessions."
+  (apply #'max 0 (mapcar (lambda (session)
+                           (string-width (string-join (plist-get session :perspectives) ",")))
+                         agent-shell-sessions--consult-cache)))
+
 (defun agent-shell-sessions--consult-annotate (candidate)
   "Return the annotation for CANDIDATE: status, idle age, perspective, title."
   (when-let* ((session (seq-find (lambda (s) (equal (plist-get s :name) candidate))
                                  agent-shell-sessions--consult-cache)))
     (concat " "
-            (agent-shell-sessions--status-label (plist-get session :status))
-            "  " (agent-shell-sessions--age-label session)
-            (when-let* ((perspectives (plist-get session :perspectives)))
-              (concat "  " (propertize (string-join perspectives ",")
-                                       'face 'font-lock-keyword-face)))
+            (string-pad (agent-shell-sessions--status-label (plist-get session :status)) 7)
+            "  " (string-pad (agent-shell-sessions--age-label session) 3)
+            "  " (string-pad (propertize (string-join (plist-get session :perspectives) ",")
+                                         'face 'font-lock-keyword-face)
+                             (agent-shell-sessions--consult-perspectives-width))
             (when-let* ((title (plist-get session :title)))
               (concat "  " (propertize (truncate-string-to-width
                                         title agent-shell-sessions-title-width
