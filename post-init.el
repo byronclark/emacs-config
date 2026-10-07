@@ -30,6 +30,26 @@
 (use-package use-package-ensure-system-package
   :ensure nil)
 
+;; *** Allow skipping a package source that's currently not responding ***
+;; Meant to allow MELPA updates when GNU/NonGNU ELPA are unavailable.
+(defvar byronc/package-refresh-timeout 20
+  "Seconds before a stuck archive download is abandoned.")
+
+(defvar byronc/package-refresh-watchdog nil)
+
+(define-advice package-refresh-contents (:after (&optional async) watchdog)
+  (when async
+    (when (timerp byronc/package-refresh-watchdog)
+      (cancel-timer byronc/package-refresh-watchdog))
+    (setq byronc/package-refresh-watchdog
+          (run-with-timer
+           byronc/package-refresh-timeout nil
+           (lambda ()
+             (dolist (entry package--downloads-in-progress)
+               (message "Archive `%s' timed out; using cached contents"
+                        (caar entry))
+               (package--update-downloads-in-progress entry)))))))
+
 (defvar byronc/vendored-packages-dir (expand-file-name "byronc" minimal-emacs-user-directory))
 
 (defvar byronc/emacs-local-init-dir (expand-file-name "init" byronc/emacs-local-dir))
