@@ -527,6 +527,13 @@ Functions run after agent-shell and its agent integrations have loaded.")
   :after elfeed
   :demand t
   :config
+  ;; Prefer real captions over auto-generated ones.
+  (let ((manual "\\`%s\\(?: (\\(?:[^a]\\|a[^u]\\|au[^t]\\|aut[^o]\\)[^)]*)\\)?\\'"))
+    (setopt elfeed-tube-captions-languages
+            (list (format manual "english")
+                  (format manual "spanish")
+                  "\\`en\\'"
+                  "\\`es\\'")))
   (elfeed-tube-setup)
   :bind (:map elfeed-show-mode-map
          ("F" . elfeed-tube-fetch)
