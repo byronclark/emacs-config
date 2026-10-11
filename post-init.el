@@ -904,6 +904,7 @@ rewrites to an id: link on save."
   ;; Claude Code
   (agent-shell-anthropic-authentication (agent-shell-anthropic-make-authentication :login t))
   (agent-shell-anthropic-default-session-mode-id "auto")
+  (agent-shell-anthropic-default-model-id "opus")
   :config
   (setq agent-shell-activity-group-header-label-function #'agent-shell-activity-group-tally-label)
   (setq agent-shell-anthropic-claude-environment
