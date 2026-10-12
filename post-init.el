@@ -79,6 +79,10 @@ Functions run after agent-shell and its agent integrations have loaded.")
   :custom
   (auth-sources (list (expand-file-name "secrets/.authinfo.gpg" byronc/emacs-local-dir))))
 
+;; Customized settings only work when you load them.
+(when custom-file
+  (load custom-file 'noerror 'nomessage))
+
 (when (file-exists-p byronc/emacs-local-init-dir)
   (mapc 'load (directory-files byronc/emacs-local-init-dir 't "^[^#\.].*\\.el$")))
 
