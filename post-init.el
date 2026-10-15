@@ -1201,6 +1201,9 @@ rewrites to an id: link on save."
     ;; Use GNU coreutils where needed on macOS
     (setopt insert-directory-program "gls")
     (setopt Man-sed-command "gsed")
+    ;; Otherwise man.el runs `man -k apropos' when it loads to pick these
+    ;; flags, which blocks for 1.5s on macOS. It always picks "-k" here.
+    (setq Man-man-k-flags '("-k"))
 
     ;; Some macOS builds of emacs have a strict limit of 1024 files that can be
     ;; _watched_ before they start spewing errors about too many open files.

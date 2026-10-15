@@ -5,8 +5,11 @@
 (setq package-user-dir (expand-file-name "elpa" minimal-emacs-var-dir))
 (setq user-emacs-directory minimal-emacs-var-dir)
 
-;; Debug startup - set to non-nil to enable
-(setq minimal-emacs-debug nil)
+;; On with --debug-init, off otherwise. Set to t to always debug startup.
+(setq minimal-emacs-debug init-file-debug)
+
+;; Record package load times for M-x use-package-report
+(setq use-package-compute-statistics t)
 
 ;; Hide the title bar
 (add-to-list 'default-frame-alist '(undecorated . t))
