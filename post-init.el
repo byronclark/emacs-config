@@ -64,7 +64,8 @@ Functions run after agent-shell and its agent integrations have loaded.")
     "gitlab\\.com"
     "melpa\\.org"
     "youtube\\.com" "youtu\\.be"
-    "google\\.com")
+    "google\\.com"
+    "claude\\.ai")
   "Regexps of domains to open in the system browser instead of eww. Defined early so local init files can add to the list.")
 
 (use-package epa-file
