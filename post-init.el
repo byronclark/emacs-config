@@ -920,6 +920,8 @@ rewrites to an id: link on save."
          ;; 1m token context window is not really a win in most cases.
          ;; Artificially limit the window until we have a better option.
          "CLAUDE_CODE_AUTO_COMPACT_WINDOW" "400000"
+         ;; Expose artifacts to the Agent SDK
+         "CLAUDE_CODE_ARTIFACT" "1"
          :inherit-env t))
 
   ;; The header SVG is already sized in pixels, but `create-image' scales
