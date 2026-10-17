@@ -901,9 +901,12 @@ rewrites to an id: link on save."
      (seq-remove (lambda (choice)
                    (eq (cdr choice) :downloads-shell))
                  choices)))
-  (agent-shell-agent-configs (list (agent-shell-anthropic-make-claude-code-config)
-                                   (agent-shell-opencode-make-agent-config)
-                                   (agent-shell-pi-make-agent-config)))
+  (agent-shell-agent-configs (list (lambda ()
+                                     (let ((config (agent-shell-anthropic-make-claude-code-config)))
+                                       (setf (alist-get :default-config-options config)
+                                             (lambda () '(("effort" . "high"))))
+                                       config))
+                                   #'agent-shell-pi-make-agent-config))
   (agent-shell-preferred-agent-config '(preselect . claude-code))
 
   ;; Claude Code
