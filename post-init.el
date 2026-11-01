@@ -585,26 +585,40 @@ Functions run after agent-shell and its agent integrations have loaded.")
   :demand t
   :mode ("\\.org\\'" . org-mode)
   :preface
+  (defconst byronc/org-capture-percent (string #x10FFFD)
+    "Stands in for % in text that Org must not expand as a placeholder.")
+
+  (defun byronc/org-capture-protect (text)
+    "Hide capture placeholders in TEXT until `byronc/org-capture-restore' runs."
+    (string-replace "%" byronc/org-capture-percent text))
+
+  (defun byronc/org-capture-restore ()
+    "Put back the % signs hidden by `byronc/org-capture-protect'."
+    (org-with-wide-buffer
+     (goto-char (point-min))
+     (while (search-forward byronc/org-capture-percent nil t)
+       (replace-match "%" t t))))
+
   (defun byronc/org-capture-web-link-template ()
     "Build a capture entry from the last stored link.
 Elfeed stores the article URL in :external-link; eww, org-protocol,
 and anything else use :link."
     (let* ((type  (plist-get org-store-link-plist :type))
            (desc  (plist-get org-store-link-plist :description))
-           ;; Escape % in page-supplied text so it isn't expanded as a capture escape.
-           (title (if desc (string-replace "%" "%%" desc) "%^{Title}"))
-           (url   (string-replace "%" "%%"
-                                  (pcase type
-                                    ("elfeed" (plist-get org-store-link-plist :external-link))
-                                    (_        (plist-get org-store-link-plist :link))))))
+           (title (if desc (byronc/org-capture-protect desc) "%^{Title}"))
+           (url   (byronc/org-capture-protect
+                   (pcase type
+                     ("elfeed" (plist-get org-store-link-plist :external-link))
+                     (_        (plist-get org-store-link-plist :link))))))
       (format "* %s\n%s\n%%U\n%%i%%?" title url)))
 
   :bind (("C-c a" . org-agenda)
          ("C-c b" . org-switchb)
          ("C-c l" . org-store-link)
          ("C-c c" . org-capture))
-  :hook (org-mode . (lambda ()
-                      (auto-fill-mode -1)))
+  :hook ((org-mode . (lambda ()
+                       (auto-fill-mode -1)))
+         (org-capture-mode . byronc/org-capture-restore))
   :config
   (setq
    ;; Edit settings
@@ -677,14 +691,23 @@ and anything else use :link."
 A node that does not exist yet gets a roam: link, which org-roam
 rewrites to an id: link on save."
     (let ((title (org-roam-node-title node)))
-      (cond ((string= title "") "")
-            ((org-roam-node-id node)
-             (org-link-make-string (concat "id:" (org-roam-node-id node)) title))
-            (t (org-link-make-string (concat "roam:" title) title)))))
+      (byronc/org-capture-protect
+       (cond ((string= title "") "")
+             ((org-roam-node-id node)
+              (org-link-make-string (concat "id:" (org-roam-node-id node)) title))
+             (t (org-link-make-string (concat "roam:" title) title))))))
 
-  (defun byronc/org-roam-read-link (prompt)
-    "Read a node with PROMPT and return an Org link to it."
-    (byronc/org-roam-node-link (org-roam-node-read nil nil nil nil prompt)))
+  (defun byronc/org-roam-read-link (prompt &optional initial)
+    "Read a node with PROMPT and INITIAL input and return an Org link to it."
+    (byronc/org-roam-node-link (org-roam-node-read initial nil nil nil prompt)))
+
+  (defun byronc/org-roam-read-authors (names)
+    "Read an author link for each of NAMES, or one if there are none."
+    (string-join
+     (seq-remove #'string-empty-p
+                 (mapcar (lambda (name) (byronc/org-roam-read-link "Author: " name))
+                         (or names '(nil))))
+     ", "))
 
   (defun byronc/org-roam-read-links (prompt)
     "Read nodes with PROMPT until an empty answer, returning a list of links."
@@ -717,9 +740,12 @@ rewrites to an id: link on save."
 
   (defun byronc/org-roam-article-template ()
     "Body for the article note capture template."
-    (let ((topics (byronc/org-roam-read-links "Topic (RET to finish): "))
-          (author (byronc/org-roam-read-link "Author: "))
-          (source (read-string "Source (RET to skip): ")))
+    (let* ((url (plist-get org-roam-capture--info :ref))
+           (topics (byronc/org-roam-read-links "Topic (RET to finish): "))
+           (author (byronc/org-roam-read-authors
+                    (plist-get org-roam-capture--info :authors)))
+           (source (byronc/org-capture-protect
+                    (or url (read-string "Source (RET to skip): ")))))
       (concat "\n- tags :: "
               (string-join (cons (byronc/org-roam-title-link "Article") topics) ", ")
               "\n"
@@ -728,6 +754,82 @@ rewrites to an id: link on save."
               "- read :: [%<%Y-%m-%d %a>]\n"
               "\n* Summary\n\n%?")))
 
+  (defun byronc/org-inbox-file ()
+    "Return the path of the inbox file."
+    (expand-file-name "inbox.org" org-directory))
+
+  (defun byronc/org-entry-web-url (end)
+    "Return the first web URL between point and END."
+    (let (url)
+      (while (and (not url) (re-search-forward org-link-plain-re end t))
+        (when (member (match-string-no-properties 1) '("http" "https"))
+          (setq url (match-string-no-properties 0))))
+      url))
+
+  (defun byronc/org-entry-article ()
+    "Return an article plist for the Org entry at point."
+    (org-with-wide-buffer
+     (org-back-to-heading t)
+     (let ((heading (org-get-heading t t t t))
+           (end (save-excursion (outline-next-heading) (point))))
+       (list :title (org-link-display-format heading)
+             :url (byronc/org-entry-web-url end)
+             :inbox-heading (and (buffer-file-name)
+                                 (file-equal-p (buffer-file-name) (byronc/org-inbox-file))
+                                 heading)))))
+
+  (defun byronc/article-at-point ()
+    "Return an article plist for the current buffer."
+    (pcase major-mode
+      ('org-mode (byronc/org-entry-article))
+      ('eww-mode (list :title (plist-get eww-data :title)
+                       :url (eww-current-url)))
+      ((or 'elfeed-show-mode 'elfeed-search-mode)
+       (let ((entry (or (if (eq major-mode 'elfeed-show-mode)
+                            elfeed-show-entry
+                          (elfeed-search-selected :ignore-region))
+                        (user-error "No article in this buffer"))))
+         (list :title (elfeed-entry-title entry)
+               :url (elfeed-entry-link entry)
+               :authors (delq nil (mapcar (lambda (author) (plist-get author :name))
+                                          (elfeed-meta entry :authors))))))
+      (_ (user-error "No article in this buffer"))))
+
+  (defun byronc/org-inbox-archive (heading)
+    "Archive the inbox entry titled HEADING, if there is one."
+    (when heading
+      (with-demoted-errors "Could not archive inbox entry: %S"
+        (with-current-buffer (find-file-noselect (byronc/org-inbox-file))
+          (if-let* ((entry (org-find-exact-headline-in-buffer heading)))
+              (org-with-point-at entry
+                (org-archive-subtree)
+                (save-buffer))
+            (message "Inbox entry not found, not archiving: %s" heading))))))
+
+  (defun byronc/org-roam-article-finalize ()
+    "Archive the inbox entry the finished article note came from."
+    (byronc/org-inbox-archive (org-capture-get :inbox-heading)))
+
+  (defun byronc/org-roam-article-capture ()
+    "Start an article note for the article in the current buffer."
+    (interactive)
+    (require 'org-roam)
+    (let* ((article (byronc/article-at-point))
+           (url (plist-get article :url))
+           (existing (and url (org-roam-node-from-ref url))))
+      (if existing
+          (progn
+            (byronc/org-inbox-archive (plist-get article :inbox-heading))
+            (org-roam-node-visit existing))
+        (org-roam-capture-
+         :keys "a"
+         :node (org-roam-node-create
+                :title (byronc/org-capture-protect
+                        (read-string "Title: " (plist-get article :title))))
+         :info (list :ref url :authors (plist-get article :authors))
+         :props (list :finalize 'byronc/org-roam-article-finalize
+                      :inbox-heading (plist-get article :inbox-heading))))))
+
   (defun byronc/org-roam-dailies-goto-today ()
     "Go to today's daily note without prompting for a template."
     (interactive)
@@ -735,6 +837,7 @@ rewrites to an id: link on save."
 
   :bind (("C-c n j" . org-roam-dailies-capture-today)
          ("C-c n d" . byronc/org-roam-dailies-goto-today)
+         ("C-c n w" . byronc/org-roam-article-capture)
          :map org-mode-map
          ("C-c n i" . org-roam-node-insert)
          ("C-c n t" . org-roam-tag-add)
