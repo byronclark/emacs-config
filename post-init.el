@@ -111,12 +111,16 @@ Functions run after agent-shell and its agent integrations have loaded.")
   ;; (modus-themes-select 'ef-owl)
   )
 
+(use-package foxglove-themes
+  :vc (:url "https://gitlab.com/vegasharmon/foxglove-themes" :rev :newest))
+
 (use-package batppuccin)
 
 (use-package auto-dark
   :custom
   (custom-safe-themes t)
-  (auto-dark-themes '((batppuccin-macchiato) (batppuccin-latte)))
+  (auto-dark-themes '((foxglove-dark) (foxglove-vellum)))
+  ;;(auto-dark-themes '((batppuccin-macchiato) (batppuccin-latte)))
   :init
   (auto-dark-mode))
 
