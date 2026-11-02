@@ -273,6 +273,7 @@ Functions run after agent-shell and its agent integrations have loaded.")
 (use-package jinx
   :hook
   (emacs-startup . global-jinx-mode)
+  (agent-shell-mode . jinx-mode)        ;comint-mode based
   :bind (("M-$" . jinx-correct)
          ("C-M-$" . jinx-languages)))
 
