@@ -156,6 +156,13 @@ Functions run after agent-shell and its agent integrations have loaded.")
              :variable-pitch-family "Source Sans 3"
              :variable-pitch-height 1.1
              :italic-slant italic)
+            (regular-plex
+             :default-family "IBM Plex Mono"
+             :default-height 140
+             :fixed-pitch-family "IBM Plex Mono"
+             :variable-pitch-family "IBM Plex Sans"
+             :variable-pitch-height 1.0
+             :italic-slant italic)
             (regular-inconsolata
              :default-family "Inconsolata"
              :default-height 160
