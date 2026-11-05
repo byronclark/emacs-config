@@ -194,6 +194,13 @@ Functions run after agent-shell and its agent integrations have loaded.")
              :variable-pitch-family "Source Sans 3"
              :variable-pitch-height 1.1
              :italic-slant italic)
+            (macbook-plex
+             :default-family "IBM Plex Mono"
+             :default-height 160
+             :fixed-pitch-family "IBM Plex Mono"
+             :variable-pitch-family "IBM Plex Sans"
+             :variable-pitch-height 1.0
+             :italic-slant italic)
             (macbook-inconsolata
              :default-family "Inconsolata"
              :default-height 180
@@ -1273,6 +1280,7 @@ rewrites to an id: link on save."
 
   :bind
   (("s-u" . revert-buffer)
+   ("s-k" . ignore) ;kill-current-buffer on macOS. way too easy to typo.
    ("C-c *" . isearch-forward-thing-at-point))
 
   :hook
