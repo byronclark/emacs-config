@@ -1176,7 +1176,7 @@ rewrites to an id: link on save."
   (treesit-auto-install 'prompt)
   (treesit-auto-langs '(typescript tsx python javascript))
   :config
-  (treesit-auto-add-to-auto-mode-alist '(typescript tsx javascript))
+  (treesit-auto-add-to-auto-mode-alist 'all)
   (global-treesit-auto-mode))
 
 ;; Allow eglot to navigate into jar archives pointed to by clojure-lsp
@@ -1184,6 +1184,13 @@ rewrites to an id: link on save."
   :after eglot
   :config
   (jarchive-setup))
+
+(use-package apheleia
+  :hook ((python-base-mode js-ts-mode typescript-ts-mode tsx-ts-mode)
+         . apheleia-mode)
+  :config
+  (dolist (mode '(python-mode python-ts-mode))
+    (setf (alist-get mode apheleia-mode-alist) '(ruff-isort ruff))))
 
 ;; **** Languages ****
 ;; ***** Clojure *****
@@ -1250,12 +1257,10 @@ rewrites to an id: link on save."
 ;; **** Python ****
 (use-package python
   :ensure nil
-  :hook
-  (python-mode . eglot-ensure)
-  (python-ts-mode . eglot-ensure))
+  :hook (python-base-mode . eglot-ensure))
 
 (use-package pyvenv-auto
-  :hook ((python-mode . pyvenv-auto-run)))
+  :hook (python-base-mode . pyvenv-auto-run))
 
 ;; **** Swift ****
 (use-package swift-mode)
