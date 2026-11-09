@@ -1262,6 +1262,15 @@ rewrites to an id: link on save."
 (use-package pyvenv-auto
   :hook (python-base-mode . pyvenv-auto-run))
 
+;; **** SQL ****
+(use-package sql
+  :ensure nil
+  :custom
+  (sql-product 'postgres))
+
+(use-package sql-indent
+  :hook (sql-mode . sqlind-minor-mode))
+
 ;; **** Swift ****
 (use-package swift-mode)
 
