@@ -1142,28 +1142,32 @@ rewrites to an id: link on save."
         (set-display-table-slot display-table 'selective-display value)
         (setq buffer-display-table display-table))))))
 
+(use-package refactor
+  :commands (refactor refactor-rename)
+  :custom
+  (refactor-confirmation nil)
+  (refactor-indicator "α"))
+
 (use-package eglot
   :commands (eglot-ensure
-             eglot-rename
              eglot-format-buffer)
   :bind (:map eglot-mode-map
-         ("C-c e a" . eglot-code-actions)
-         ("C-c e r" . eglot-rename)
+         ("C-c e a" . refactor)
+         ("C-c e r" . refactor-rename)
          ("C-c e f" . eglot-format)
          ("C-c e i" . eglot-find-implementation)
          ("C-c e d" . eglot-find-declaration))
   :custom
   (eglot-connect-timeout 300)
-  (eglot-ignored-server-capabilites '(:inlayHintProvider))
+  (eglot-ignored-server-capabilities '(:inlayHintProvider))
   (eglot-extend-to-xref nil)
-  (eglot-confirm-server-initiated-edits nil)
-  (eglot-code-action-indicator "α")
-  :config
+  :preface
   (defun byronc/eglot-maybe-format-region (orig-fun beg end &optional arg)
     (if (and (bound-and-true-p eglot--managed-mode)
-             (eglot--server-capable :documentRangeFormattingProvider))
+             (eglot-server-capable :documentRangeFormattingProvider))
         (eglot-format beg end)
       (funcall orig-fun beg end arg)))
+  :config
   (advice-add 'indent-region :around #'byronc/eglot-maybe-format-region))
 
 (use-package eglot-multi-preset
