@@ -940,6 +940,7 @@ rewrites to an id: link on save."
      (consult-ripgrep "Find regexp")
      (project-find-dir "Find directory")
      (ghostel-project "Terminal")
+     (agent-shell-new-shell "Agent shell")
      (magit-project-status "Magit")))
   (project-vc-extra-root-markers
    '(".projectile" ; carry over from projectile
@@ -1047,6 +1048,8 @@ rewrites to an id: link on save."
          :inherit-env t))
 
   (run-hooks 'byronc/agent-shell-configure-hook)
+  :bind (:map project-prefix-map
+         ("a" . agent-shell-new-shell))
   :commands (agent-shell))
 
 ;; Live view of every agent-shell session and the perspective it's running in.
