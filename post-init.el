@@ -304,6 +304,11 @@ Functions run after agent-shell and its agent integrations have loaded.")
                                         (not (memq major-mode '(org-mode hexl-mode)))))
   :hook (emacs-startup . super-save-mode))
 
+(use-package separedit
+  :commands separedit
+  :bind (:map prog-mode-map
+         ("C-c '" . separedit)))
+
 ;; **** Miscellaneous ****
 (use-package which-key
   :ensure nil
